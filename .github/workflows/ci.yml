@@ -10,6 +10,10 @@ jobs:
     strategy:
       matrix:
         php: ['8.1', '8.2', '8.3']
+    env:
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
+      ASAAS_ENV: ${{ secrets.ASAAS_ENV }}
+      ASAAS_APP_NAME: ${{ secrets.ASAAS_APP_NAME }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -21,9 +25,5 @@ jobs:
       - run: composer lint
       - run: php bin/verify-parity.php
       - name: Integration tests
-        if: secrets.ASAAS_API_KEY != ''
-        env:
-          ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
-          ASAAS_ENV: ${{ secrets.ASAAS_ENV }}
-          ASAAS_APP_NAME: ${{ secrets.ASAAS_APP_NAME }}
+        if: env.ASAAS_API_KEY != ''
         run: phpunit --testsuite integration
