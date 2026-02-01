@@ -1,11 +1,15 @@
 # Asaas SDK PHP
 
-SDK PHP oficial para a API do Asaas, com geração automática a partir do OpenAPI das referências e paridade com a SDK Java.
+> **NÃO OFICIAL** — Não afiliada ao Asaas.  
+> Gerada a partir da documentação pública/OpenAPI e inspirada na SDK Java oficial.  
+> Asaas é marca de seus respectivos proprietários.
+
+SDK PHP não oficial para a API do Asaas, com geração automática a partir do OpenAPI das referências e paridade com a SDK Java.
 
 ## Instalação
 
 ```bash
-composer require asaas/sdk-php
+composer require argws/asaas-sdk-php
 ```
 
 ## Configuração

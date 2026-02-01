@@ -6,7 +6,12 @@ namespace Asaas\Sdk\Generator;
 
 final class OpenApiBuilder
 {
-    public function __construct(private ?callable $httpGet = null)
+    /**
+     * @var callable(string): string
+     */
+    private $httpGet;
+
+    public function __construct(?callable $httpGet = null)
     {
         $this->httpGet = $httpGet ?? static function (string $url): string {
             return file_get_contents($url) ?: '';
