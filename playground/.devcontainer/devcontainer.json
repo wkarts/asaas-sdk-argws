@@ -1,0 +1,13 @@
+{
+  "name": "Asaas Playground",
+  "image": "mcr.microsoft.com/devcontainers/php:1-8.1",
+  "forwardPorts": [8080],
+  "postCreateCommand": "cd playground && composer install",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php"
+      }
+    }
+  }
+}
