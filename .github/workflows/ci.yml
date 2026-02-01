@@ -110,7 +110,7 @@ jobs:
             echo "Packagist secrets ausentes, pulando update."
             exit 0
           fi
-          REPO_URL="${PACKAGIST_REPOSITORY:-https://github.com/wkarts/asaas-sdk-php}"
+          REPO_URL="${PACKAGIST_REPOSITORY:-https://github.com/wkarts/asaas-sdk-argws}"
           curl -sS -X POST "https://packagist.org/api/update-package" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${PACKAGIST_USERNAME}:${PACKAGIST_TOKEN}" \
