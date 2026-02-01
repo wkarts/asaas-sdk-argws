@@ -14,7 +14,7 @@ composer require argws/asaas-sdk-php
 
 ## Configuração
 
-Use variáveis de ambiente para facilitar:
+Use variáveis de ambiente para facilitar (veja também `.env.example`):
 
 ```bash
 export ASAAS_API_KEY="seu_token"
@@ -36,6 +36,16 @@ $config = new AsaasConfig(
 );
 
 $asaas = new AsaasSdk($config);
+```
+
+## Paridade e geração automática
+
+Este SDK é gerado a partir da documentação/OpenAPI e busca paridade com a SDK Java oficial:
+
+```bash
+composer asaas:build-openapi
+composer asaas:generate
+composer asaas:verify
 ```
 
 ## Exemplos
@@ -89,20 +99,42 @@ $asaas->setEnvironment(Environment::Sandbox);
 $asaas->setEnvironment(Environment::Production);
 ```
 
-## Geração automática
-
-```bash
-composer asaas:build-openapi
-composer asaas:generate
-composer asaas:verify
-```
-
 ## Testes e qualidade
 
 ```bash
 composer test
 composer lint
 ```
+
+## Variáveis de ambiente
+
+Para testes locais (sandbox):
+
+```bash
+ASAAS_API_KEY="seu_token_sandbox"
+ASAAS_ENV="sandbox"
+ASAAS_APP_NAME="MinhaApp/1.0"
+```
+
+## GitHub Secrets (CI)
+
+Configure os secrets no repositório:
+
+- `ASAAS_API_KEY` (sandbox recomendado)
+- `ASAAS_ENV` (`sandbox` ou `production`)
+- `ASAAS_APP_NAME` (ex.: `argws-asaas-sdk-php/1.0`)
+
+## Publicação (Packagist + GitHub Releases)
+
+Consulte o passo a passo em [`docs/PUBLISHING.md`](docs/PUBLISHING.md). O fluxo esperado é:
+
+1. Commit e tag (ex.: `v1.0.0`)
+2. Push da tag para o GitHub
+3. Release automática no GitHub e atualização no Packagist via webhook
+
+## Aviso legal
+
+Leia [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ## Licença
 

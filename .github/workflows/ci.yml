@@ -25,5 +25,9 @@ jobs:
       - run: composer lint
       - run: php bin/verify-parity.php
       - name: Integration tests
-        if: env.ASAAS_API_KEY != ''
+        if: ${{ secrets.ASAAS_API_KEY != '' }}
+        env:
+          ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
+          ASAAS_ENV: ${{ secrets.ASAAS_ENV }}
+          ASAAS_APP_NAME: ${{ secrets.ASAAS_APP_NAME }}
         run: phpunit --testsuite integration

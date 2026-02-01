@@ -14,6 +14,5 @@ final class AsaasConfig
         public string $appName = 'AsaasSdk/1.0',
         public float $timeout = 30.0,
         public float $connectTimeout = 10.0
-    ) {
-    }
+    ) {}
 }

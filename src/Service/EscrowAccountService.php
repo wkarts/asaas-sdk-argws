@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\EscrowAccountService as GeneratedEscrowAccountService;
 
-final class EscrowAccountService extends GeneratedEscrowAccountService
-{
-}
+final class EscrowAccountService extends GeneratedEscrowAccountService {}

@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\PixService as GeneratedPixService;
 
-final class PixService extends GeneratedPixService
-{
-}
+final class PixService extends GeneratedPixService {}

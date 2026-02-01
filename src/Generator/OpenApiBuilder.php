@@ -18,6 +18,9 @@ final class OpenApiBuilder
         };
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function buildFromReference(string $baseUrl): array
     {
         $html = ($this->httpGet)($baseUrl);
@@ -67,9 +70,12 @@ final class OpenApiBuilder
     {
         preg_match_all('#/reference/([a-z0-9\-]+)#i', $html, $matches);
 
-        return array_values(array_unique($matches[1] ?? []));
+        return array_values(array_unique($matches[1]));
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function extractOpenApiJson(string $markdown): ?array
     {
         $pattern = '/```json\s*\n(\{.*?\})\n```/s';
