@@ -9,7 +9,7 @@ SDK PHP não oficial para a API do Asaas, com geração automática a partir do 
 ## Instalação
 
 ```bash
-composer require wkarts/asaas-sdk-php
+composer require argws/asaas-sdk-php
 ```
 
 ## Configuração
@@ -122,7 +122,7 @@ Configure os secrets no repositório:
 
 - `ASAAS_API_KEY` (sandbox recomendado)
 - `ASAAS_ENV` (`sandbox` ou `production`)
-- `ASAAS_APP_NAME` (ex.: `wkarts-asaas-sdk-php/1.0`)
+- `ASAAS_APP_NAME` (ex.: `argws-asaas-sdk-php/1.0`)
 
 ## Publicação (Packagist + GitHub Releases)
 
