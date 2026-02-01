@@ -33,9 +33,9 @@ final class GeneratorSdkTest extends TestCase
         ];
 
         $tempDir = sys_get_temp_dir() . '/asaas-sdk-test-' . uniqid();
-        mkdir($tempDir . '/services', 0777, true);
-        mkdir($tempDir . '/models', 0777, true);
-        mkdir($tempDir . '/templates', 0777, true);
+        mkdir($tempDir . '/services', 0o777, true);
+        mkdir($tempDir . '/models', 0o777, true);
+        mkdir($tempDir . '/templates', 0o777, true);
 
         file_put_contents($tempDir . '/templates/service.php.tpl', "<?php\n\nnamespace Asaas\\\\Sdk\\\\Service\\\\Generated;\n\nfinal class {{className}} {\n{{methods}}\n}\n");
         file_put_contents($tempDir . '/templates/dto.php.tpl', '');

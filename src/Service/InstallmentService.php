@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\InstallmentService as GeneratedInstallmentService;
 
-final class InstallmentService extends GeneratedInstallmentService
-{
-}
+final class InstallmentService extends GeneratedInstallmentService {}

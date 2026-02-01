@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\MobilePhoneRechargeService as GeneratedMobilePhoneRechargeService;
 
-final class MobilePhoneRechargeService extends GeneratedMobilePhoneRechargeService
-{
-}
+final class MobilePhoneRechargeService extends GeneratedMobilePhoneRechargeService {}

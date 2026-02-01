@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\PaymentRefundService as GeneratedPaymentRefundService;
 
-final class PaymentRefundService extends GeneratedPaymentRefundService
-{
-}
+final class PaymentRefundService extends GeneratedPaymentRefundService {}
