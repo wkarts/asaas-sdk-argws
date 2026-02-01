@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\InvoiceService as GeneratedInvoiceService;
 
-final class InvoiceService extends GeneratedInvoiceService
-{
-}
+final class InvoiceService extends GeneratedInvoiceService {}

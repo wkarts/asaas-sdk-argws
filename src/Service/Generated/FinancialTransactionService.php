@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-class FinancialTransactionService extends AbstractService
-{
-}
+class FinancialTransactionService extends AbstractService {}

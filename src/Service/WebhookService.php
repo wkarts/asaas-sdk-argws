@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\WebhookService as GeneratedWebhookService;
 
-final class WebhookService extends GeneratedWebhookService
-{
-}
+final class WebhookService extends GeneratedWebhookService {}

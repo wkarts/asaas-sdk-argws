@@ -9,11 +9,10 @@ use Asaas\Sdk\Util\Path;
 
 abstract class AbstractService
 {
-    public function __construct(protected Client $client)
-    {
-    }
+    public function __construct(protected Client $client) {}
 
     /**
+     * @param array<string, string|int> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
