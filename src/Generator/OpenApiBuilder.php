@@ -9,27 +9,14 @@ final class OpenApiBuilder
     /**
      * @var callable(string): string
      */
-    private \Closure $httpGet;
-    
+    private $httpGet;
+
     public function __construct(?callable $httpGet = null)
     {
-        $this->httpGet = $httpGet
-            ? \Closure::fromCallable($httpGet)
-            : function (string $url): string {
-                $ctx = stream_context_create([
-                    'http' => [
-                        'timeout' => 60,
-                        'header'  => "User-Agent: asaas-sdk-php-generator/1.0\r\n",
-                    ],
-                ]);
-                $data = @file_get_contents($url, false, $ctx);
-                if ($data === false) {
-                    throw new \RuntimeException("Falha ao baixar: {$url}");
-                }
-                return $data;
-            };
+        $this->httpGet = $httpGet ?? static function (string $url): string {
+            return file_get_contents($url) ?: '';
+        };
     }
-
 
     /**
      * @return array<string, mixed>
