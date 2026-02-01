@@ -9,7 +9,7 @@ final class OpenApiBuilder
     /**
      * @var callable(string): string
      */
-    private $httpGet;
+    private \Closure $httpGet;
 
     public function __construct(?callable $httpGet = null)
     {
