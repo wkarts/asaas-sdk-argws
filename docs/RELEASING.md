@@ -11,7 +11,7 @@ Configure os secrets no GitHub em **Settings → Secrets and variables → Actio
 
 Opcional:
 
-- `PACKAGIST_REPOSITORY` (default: `https://github.com/argws/asaas-sdk-php`)
+- `PACKAGIST_REPOSITORY` (default: `https://github.com/wkarts/asaas-sdk-argws`)
 
 > Sem `PACKAGIST_USERNAME` e `PACKAGIST_TOKEN`, o workflow **não falha** e apenas registra no log que o update foi ignorado.
 
