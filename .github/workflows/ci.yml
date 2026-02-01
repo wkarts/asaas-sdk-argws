@@ -4,12 +4,20 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         php: ['8.1', '8.2', '8.3']
+    env:
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
+      ASAAS_ENV: ${{ secrets.ASAAS_ENV }}
+      ASAAS_APP_NAME: ${{ secrets.ASAAS_APP_NAME }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -22,8 +30,88 @@ jobs:
       - run: php bin/verify-parity.php
       - name: Integration tests
         if: env.ASAAS_API_KEY != ''
-        env:
-          ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
-          ASAAS_ENV: ${{ secrets.ASAAS_ENV }}
-          ASAAS_APP_NAME: ${{ secrets.ASAAS_APP_NAME }}
         run: phpunit --testsuite integration
+
+  release:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    env:
+      PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+      PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+      PACKAGIST_REPOSITORY: ${{ secrets.PACKAGIST_REPOSITORY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Buscar tags
+        run: git fetch --tags --force
+      - name: Calcular próxima versão
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="$LAST_TAG..HEAD"
+          fi
+
+          MESSAGES=$(git log $RANGE --pretty=format:%B)
+          if echo "$MESSAGES" | grep -q "BREAKING CHANGE" || echo "$MESSAGES" | grep -q "!:"
+          then
+            BUMP="major"
+          elif echo "$MESSAGES" | grep -q "^feat"
+          then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+
+          if [ -z "$LAST_TAG" ]; then
+            NEXT_TAG="v0.1.0"
+          else
+            VERSION="${LAST_TAG#v}"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            case "$BUMP" in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+            NEXT_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          echo "NEXT_TAG=$NEXT_TAG" >> "$GITHUB_ENV"
+      - name: Criar tag
+        run: |
+          if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEXT_TAG já existe, saindo."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+          git push origin "$NEXT_TAG"
+      - name: Criar release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.NEXT_TAG }}
+          generate_release_notes: true
+      - name: Atualizar Packagist
+        run: |
+          if [ -z "$PACKAGIST_USERNAME" ] || [ -z "$PACKAGIST_TOKEN" ]; then
+            echo "Packagist secrets ausentes, pulando update."
+            exit 0
+          fi
+          REPO_URL="${PACKAGIST_REPOSITORY:-https://github.com/wkarts/asaas-sdk-php}"
+          curl -sS -X POST "https://packagist.org/api/update-package" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${PACKAGIST_USERNAME}:${PACKAGIST_TOKEN}" \
+            -d "{\"repository\":\"${REPO_URL}\"}"

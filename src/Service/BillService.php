@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\BillService as GeneratedBillService;
 
-final class BillService extends GeneratedBillService
-{
-}
+final class BillService extends GeneratedBillService {}
