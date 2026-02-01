@@ -11,6 +11,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+      PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+      PACKAGIST_PACKAGE_URL: ${{ secrets.PACKAGIST_PACKAGE_URL }}
     steps:
       - uses: actions/checkout@v4
       - name: Criar Release no GitHub
@@ -18,11 +22,7 @@ jobs:
         with:
           generate_release_notes: true
       - name: Atualizar Packagist via API (opcional)
-        if: ${{ secrets.PACKAGIST_USERNAME != '' && secrets.PACKAGIST_TOKEN != '' && secrets.PACKAGIST_PACKAGE_URL != '' }}
-        env:
-          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
-          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
-          PACKAGIST_PACKAGE_URL: ${{ secrets.PACKAGIST_PACKAGE_URL }}
+        if: env.PACKAGIST_USERNAME != '' && env.PACKAGIST_TOKEN != '' && env.PACKAGIST_PACKAGE_URL != ''
         run: |
           curl -sS -X POST \
             -H 'Content-Type: application/json' \
