@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\SandboxActionsService as GeneratedSandboxActionsService;
 
-final class SandboxActionsService extends GeneratedSandboxActionsService
-{
-}
+final class SandboxActionsService extends GeneratedSandboxActionsService {}

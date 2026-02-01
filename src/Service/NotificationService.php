@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\NotificationService as GeneratedNotificationService;
 
-final class NotificationService extends GeneratedNotificationService
-{
-}
+final class NotificationService extends GeneratedNotificationService {}

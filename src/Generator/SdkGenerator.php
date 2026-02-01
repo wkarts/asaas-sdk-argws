@@ -137,31 +137,31 @@ final class SdkGenerator
         bool $expectsBinary
     ): string {
         $template = <<<'PHP'
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function {{methodName}}(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            '{{httpMethod}}',
-            '{{path}}',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            {{multipart}},
-            {{expectsBinary}}
-        );
-    }
+                /**
+                 * @param array<string, string> $pathParams
+                 * @param array<string, mixed> $query
+                 * @param array<string, string> $headers
+                 * @param array<string, mixed>|null $payload
+                 */
+                public function {{methodName}}(
+                    array $pathParams = [],
+                    array $query = [],
+                    array $headers = [],
+                    ?array $payload = null
+                ): mixed {
+                    return $this->request(
+                        '{{httpMethod}}',
+                        '{{path}}',
+                        $pathParams,
+                        $query,
+                        $headers,
+                        $payload,
+                        {{multipart}},
+                        {{expectsBinary}}
+                    );
+                }
 
-PHP;
+            PHP;
 
         return str_replace(
             ['{{methodName}}', '{{httpMethod}}', '{{path}}', '{{multipart}}', '{{expectsBinary}}'],
@@ -185,6 +185,9 @@ PHP;
         return lcfirst($operationId);
     }
 
+    /**
+     * @param array<string, mixed> $responses
+     */
     private function responseExpectsBinary(array $responses): bool
     {
         foreach ($responses as $response) {
@@ -200,6 +203,9 @@ PHP;
         return false;
     }
 
+    /**
+     * @param array<string, mixed>|null $requestBody
+     */
     private function requestIsMultipart(?array $requestBody): bool
     {
         if ($requestBody === null) {

@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\FinancialTransactionService as GeneratedFinancialTransactionService;
 
-final class FinancialTransactionService extends GeneratedFinancialTransactionService
-{
-}
+final class FinancialTransactionService extends GeneratedFinancialTransactionService {}

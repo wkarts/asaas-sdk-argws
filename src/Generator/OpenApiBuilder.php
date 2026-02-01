@@ -6,13 +6,21 @@ namespace Asaas\Sdk\Generator;
 
 final class OpenApiBuilder
 {
-    public function __construct(private ?callable $httpGet = null)
+    /**
+     * @var callable(string): string
+     */
+    private $httpGet;
+
+    public function __construct(?callable $httpGet = null)
     {
         $this->httpGet = $httpGet ?? static function (string $url): string {
             return file_get_contents($url) ?: '';
         };
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function buildFromReference(string $baseUrl): array
     {
         $html = ($this->httpGet)($baseUrl);
@@ -62,9 +70,12 @@ final class OpenApiBuilder
     {
         preg_match_all('#/reference/([a-z0-9\-]+)#i', $html, $matches);
 
-        return array_values(array_unique($matches[1] ?? []));
+        return array_values(array_unique($matches[1]));
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function extractOpenApiJson(string $markdown): ?array
     {
         $pattern = '/```json\s*\n(\{.*?\})\n```/s';

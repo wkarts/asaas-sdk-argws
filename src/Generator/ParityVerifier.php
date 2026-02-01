@@ -57,10 +57,10 @@ final class ParityVerifier
         $reflection = new \ReflectionClass(AsaasSdk::class);
         $properties = array_filter(
             $reflection->getProperties(\ReflectionProperty::IS_PUBLIC),
-            static fn (\ReflectionProperty $prop) => !$prop->isStatic()
+            static fn(\ReflectionProperty $prop) => !$prop->isStatic()
         );
 
-        $names = array_map(static fn (\ReflectionProperty $prop) => $prop->getName(), $properties);
+        $names = array_map(static fn(\ReflectionProperty $prop) => $prop->getName(), $properties);
         sort($names);
 
         return $names;

@@ -61,12 +61,16 @@ final class Serializer
         }
 
         if (is_array($value)) {
-            return array_map(static fn ($item) => self::normalizeValue($item), $value);
+            return array_map(static fn($item) => self::normalizeValue($item), $value);
         }
 
         return $value;
     }
 
+    /**
+     * @param list<string> $required
+     * @param array<string, mixed> $data
+     */
     public static function validateRequired(array $required, array $data): void
     {
         foreach ($required as $field) {

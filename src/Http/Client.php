@@ -62,7 +62,7 @@ final class Client
     {
         $this->environment = $environment;
         $this->client = new GuzzleClient([
-            'base_uri' => $environment->value,
+            'base_uri' => $this->environment->value,
         ] + $this->client->getConfig());
     }
 
