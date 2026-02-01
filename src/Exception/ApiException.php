@@ -9,6 +9,9 @@ final class ApiException extends \RuntimeException
     /** @var array<int, array<string, mixed>> */
     private array $errors;
 
+    /**
+     * @param array<int, array{code?: string|null, description?: string|null}|array<string, mixed>> $errors
+     */
     public function __construct(
         string $message,
         private int $statusCode,

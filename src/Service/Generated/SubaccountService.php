@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-class SubaccountService extends AbstractService
-{
-}
+class SubaccountService extends AbstractService {}

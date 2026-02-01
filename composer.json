@@ -1,6 +1,6 @@
 {
-  "name": "asaas/sdk-php",
-  "description": "SDK PHP oficial da API Asaas",
+  "name": "wkarts/asaas-sdk-php",
+  "description": "SDK PHP NÃO OFICIAL para a API do Asaas. Baseada na SDK Java e gerada a partir da documentação/OpenAPI.",
   "type": "library",
   "license": "MIT",
   "require": {

@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\CreditCardService as GeneratedCreditCardService;
 
-final class CreditCardService extends GeneratedCreditCardService
-{
-}
+final class CreditCardService extends GeneratedCreditCardService {}

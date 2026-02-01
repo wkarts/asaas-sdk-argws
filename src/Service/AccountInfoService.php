@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\AccountInfoService as GeneratedAccountInfoService;
 
-final class AccountInfoService extends GeneratedAccountInfoService
-{
-}
+final class AccountInfoService extends GeneratedAccountInfoService {}

@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\TransferService as GeneratedTransferService;
 
-final class TransferService extends GeneratedTransferService
-{
-}
+final class TransferService extends GeneratedTransferService {}

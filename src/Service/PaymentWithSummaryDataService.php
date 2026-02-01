@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\PaymentWithSummaryDataService as GeneratedPaymentWithSummaryDataService;
 
-final class PaymentWithSummaryDataService extends GeneratedPaymentWithSummaryDataService
-{
-}
+final class PaymentWithSummaryDataService extends GeneratedPaymentWithSummaryDataService {}
