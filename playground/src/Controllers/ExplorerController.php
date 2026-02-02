@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Playground\Controllers;
 
+use Asaas\Sdk\AsaasSdk;
 use Playground\Utils\ArgumentHydrator;
 use Playground\Utils\FileStore;
 use Playground\Utils\Json;
-use Playground\Utils\Mask;
 use Playground\Utils\ReflectionScanner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -43,7 +43,8 @@ final class ExplorerController extends AbstractController
             return $this->json(['error' => $decoded['error']], 422);
         }
 
-        $paramsData = $decoded['data'];
+        $paramsData = is_array($decoded['data']) ? $decoded['data'] : null;
+        $apiKey = $this->extractApiKey($request, $paramsData);
 
         $start = microtime(true);
         $status = null;
@@ -56,7 +57,8 @@ final class ExplorerController extends AbstractController
                 throw new \RuntimeException('Classe inválida.');
             }
 
-            $instance = $this->resolveService($class);
+            $sdk = $this->bootstrap->sdkForRequest($request, $apiKey);
+            $instance = $this->resolveService($class, $sdk, $request, $apiKey);
             $reflection = new \ReflectionMethod($class, $method);
             $args = $this->buildArguments($reflection, $paramsData, $request);
 
@@ -92,7 +94,7 @@ final class ExplorerController extends AbstractController
 
         $this->logAction(
             'EXPLORER:' . $class . '::' . $method,
-            is_array($paramsData) ? Mask::maskArray($paramsData) : $paramsData,
+            $this->scrubSensitive($paramsData),
             $duration,
             $success,
             $status,
@@ -103,9 +105,8 @@ final class ExplorerController extends AbstractController
         return $this->json($result, $success ? 200 : 500);
     }
 
-    private function resolveService(string $class): object
+    private function resolveService(string $class, AsaasSdk $sdk, ServerRequestInterface $request, ?string $apiKey): object
     {
-        $sdk = $this->bootstrap->sdk();
         $short = (new \ReflectionClass($class))->getShortName();
         $property = lcfirst(str_replace('Service', '', $short));
 
@@ -115,7 +116,7 @@ final class ExplorerController extends AbstractController
 
         $constructor = (new \ReflectionClass($class))->getConstructor();
         if ($constructor !== null && $constructor->getNumberOfParameters() > 0) {
-            return new $class($this->bootstrap->client());
+            return new $class($this->bootstrap->clientForRequest($request, $apiKey));
         }
 
         return new $class();

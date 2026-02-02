@@ -19,8 +19,10 @@ final class ReflectionScanner
     public function catalog(): array
     {
         $classes = $this->discoverClasses();
-        $services = array_values(array_filter($classes, fn (string $class): bool =>
-            str_starts_with($class, self::SDK_PREFIX . 'Service\\') && str_ends_with($class, 'Service')
+        $services = array_values(array_filter(
+            $classes,
+            fn(string $class): bool
+            => str_starts_with($class, self::SDK_PREFIX . 'Service\\') && str_ends_with($class, 'Service')
         ));
 
         $methods = [];
@@ -30,10 +32,10 @@ final class ReflectionScanner
             }
             $reflection = new ReflectionClass($class);
             $methods[$class] = array_map(
-                fn (ReflectionMethod $method) => $this->formatMethod($method),
+                fn(ReflectionMethod $method) => $this->formatMethod($method),
                 array_filter(
                     $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
-                    fn (ReflectionMethod $method): bool => !$method->isConstructor() && !$method->isDestructor()
+                    fn(ReflectionMethod $method): bool => !$method->isConstructor() && !$method->isDestructor()
                 )
             );
         }
@@ -59,7 +61,7 @@ final class ReflectionScanner
             $classmap = require $classmapPath;
             $classes = array_keys(array_filter(
                 $classmap,
-                fn (string $path, string $class): bool => str_starts_with($class, self::SDK_PREFIX),
+                fn(string $path, string $class): bool => str_starts_with($class, self::SDK_PREFIX),
                 ARRAY_FILTER_USE_BOTH
             ));
         }

@@ -28,6 +28,8 @@ Principais variáveis:
   - Array (`[]`) para argumentos posicionais.
   - Objeto (`{}`) para casar por nome.
 - Objetos tipados são hidratados automaticamente via Reflection.
+- Se você não quer usar a chave fixa do `.env`, informe a chave no topo da UI. Ela é enviada apenas em memória via header `X-Asaas-Api-Key`.
+- O ambiente pode ser alternado por request via header `X-Asaas-Env` (`sandbox`/`production`).
 
 ## Catálogo da SDK
 
@@ -51,7 +53,7 @@ Se `ASAAS_WEBHOOK_TOKEN` estiver definido, o header `asaas-access-token` é obri
 
 ## Logs
 
-Todas as chamadas de Explorer, Scenarios e Raw ficam registradas em SQLite. Acesse `/logs` para filtrar por ação/sucesso.
+Todas as chamadas de Explorer, Scenarios e Raw ficam registradas em SQLite. Acesse `/logs` para filtrar por ação/sucesso. Campos sensíveis (`api_key`, `access_token`) são removidos dos logs.
 
 ## Deploy VPS (Docker Hub + Nginx)
 
@@ -93,6 +95,20 @@ server {
 ```bash
 certbot --nginx -d playground-asaas-sdk.argws.com.br
 ```
+
+## Deploy VPS (Docker Hub + Caddy com TLS automático)
+
+```bash
+cd playground
+cp .env.example .env
+
+echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+docker compose -f docker-compose.full.yml pull
+docker compose -f docker-compose.full.yml up -d
+```
+
+Esse modo usa o Caddy para obter/renovar TLS automaticamente no domínio `playground-asaas-sdk.argws.com.br`.
 
 ## Docker Hub
 

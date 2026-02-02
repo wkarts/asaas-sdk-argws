@@ -26,7 +26,7 @@ ob_start();
         form.append('method', document.getElementById('method').value);
         form.append('path', document.getElementById('path').value);
         form.append('body', document.getElementById('body').value);
-        const response = await fetch('/raw/run', { method: 'POST', body: form });
+        const response = await fetch('/raw/run', { method: 'POST', body: form, headers: window.playgroundHeaders() });
         const data = await response.json();
         result.textContent = JSON.stringify(data, null, 2);
     });

@@ -6,7 +6,6 @@ namespace Playground\Controllers;
 
 use Playground\Utils\FileStore;
 use Playground\Utils\Json;
-use Playground\Utils\Mask;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -29,6 +28,9 @@ final class RawController extends AbstractController
             return $this->json(['error' => $decoded['error']], 422);
         }
 
+        $payload = is_array($decoded['data']) ? $decoded['data'] : null;
+        $apiKey = $this->extractApiKey($request, $payload);
+
         $start = microtime(true);
         $success = false;
         $responseData = null;
@@ -36,8 +38,7 @@ final class RawController extends AbstractController
         $download = null;
 
         try {
-            $client = $this->bootstrap->client();
-            $payload = is_array($decoded['data']) ? $decoded['data'] : null;
+            $client = $this->bootstrap->clientForRequest($request, $apiKey);
             $responseData = $client->request($method, $path, [], [], $payload);
             $success = true;
         } catch (\Throwable $exception) {
@@ -59,7 +60,7 @@ final class RawController extends AbstractController
 
         $this->logAction(
             'RAW:' . $method . ':' . $path,
-            is_array($decoded['data']) ? Mask::maskArray($decoded['data']) : $decoded['data'],
+            $this->scrubSensitive($payload),
             $duration,
             $success,
             $errorMessage,

@@ -60,7 +60,7 @@ ob_start();
         if (file) {
             form.append(fileName, file);
         }
-        const response = await fetch('/explorer/run', { method: 'POST', body: form });
+        const response = await fetch('/explorer/run', { method: 'POST', body: form, headers: window.playgroundHeaders() });
         const data = await response.json();
         result.textContent = JSON.stringify(data, null, 2);
     });

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Playground\Controllers;
 
 use Playground\Bootstrap;
+use Playground\Utils\Mask;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
 
 abstract class AbstractController
@@ -37,5 +39,41 @@ abstract class AbstractController
         $response->getBody()->write($content ?: '');
 
         return $response;
+    }
+
+    /**
+     * @param array<string, mixed>|null $payload
+     */
+    protected function extractApiKey(ServerRequestInterface $request, ?array &$payload): ?string
+    {
+        $headerKey = $request->getHeaderLine('X-Asaas-Api-Key');
+        if ($headerKey !== '') {
+            return $headerKey;
+        }
+
+        if (is_array($payload)) {
+            foreach (['api_key', 'access_token'] as $field) {
+                if (array_key_exists($field, $payload)) {
+                    $apiKey = (string) $payload[$field];
+                    unset($payload[$field]);
+                    return $apiKey;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed>|null $payload
+     * @return array<string, mixed>|null
+     */
+    protected function scrubSensitive(?array $payload): ?array
+    {
+        if ($payload === null) {
+            return null;
+        }
+
+        return Mask::scrubArray($payload);
     }
 }

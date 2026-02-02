@@ -15,7 +15,7 @@ final class FileStore
     {
         $this->downloadPath = rtrim($basePath, '/') . '/storage/downloads';
         if (!is_dir($this->downloadPath)) {
-            mkdir($this->downloadPath, 0777, true);
+            mkdir($this->downloadPath, 0o777, true);
         }
     }
 

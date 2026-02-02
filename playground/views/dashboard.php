@@ -12,7 +12,7 @@ ob_start();
     document.getElementById('healthcheck').addEventListener('click', async () => {
         const result = document.getElementById('healthResult');
         result.textContent = 'Executando...';
-        const response = await fetch('/health');
+        const response = await fetch('/health', { headers: window.playgroundHeaders() });
         const data = await response.json();
         result.textContent = JSON.stringify(data, null, 2);
     });

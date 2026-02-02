@@ -14,6 +14,7 @@ final class Mask
         'secret',
         'key',
     ];
+    private const REDACTED = '[REDACTED]';
 
     /**
      * @param array<string, mixed> $data
@@ -29,7 +30,7 @@ final class Mask
             }
 
             if (self::isSensitiveKey((string) $key) && is_string($value)) {
-                $masked[$key] = self::maskString($value);
+                $masked[$key] = self::REDACTED;
                 continue;
             }
 
@@ -50,6 +51,29 @@ final class Mask
         $end = substr($value, -3);
 
         return $start . str_repeat('*', $length - 6) . $end;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public static function scrubArray(array $data): array
+    {
+        $scrubbed = [];
+        foreach ($data as $key => $value) {
+            if (self::isSensitiveKey((string) $key)) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $scrubbed[$key] = self::scrubArray($value);
+                continue;
+            }
+
+            $scrubbed[$key] = $value;
+        }
+
+        return $scrubbed;
     }
 
     private static function isSensitiveKey(string $key): bool

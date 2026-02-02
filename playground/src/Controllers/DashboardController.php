@@ -22,6 +22,7 @@ final class DashboardController extends AbstractController
         $scanner = new ReflectionScanner($this->bootstrap->basePath());
         $catalog = $scanner->catalog();
         $start = microtime(true);
+        $apiKey = $this->extractApiKey($request, $payload = null);
 
         $result = [
             'ok' => false,
@@ -31,7 +32,7 @@ final class DashboardController extends AbstractController
         ];
 
         try {
-            $healthResponse = $this->runLightweightCall($catalog['services'] ?? []);
+            $healthResponse = $this->runLightweightCall($request, $catalog['services'] ?? [], $apiKey);
             $result['ok'] = true;
             $result['response'] = $healthResponse;
         } catch (\Throwable $exception) {
@@ -47,8 +48,9 @@ final class DashboardController extends AbstractController
      * @param string[] $services
      * @return mixed
      */
-    private function runLightweightCall(array $services): mixed
+    private function runLightweightCall(ServerRequestInterface $request, array $services, ?string $apiKey): mixed
     {
+        $sdk = $this->bootstrap->sdkForRequest($request, $apiKey);
         foreach ($services as $serviceClass) {
             if (!class_exists($serviceClass)) {
                 continue;
@@ -60,7 +62,7 @@ final class DashboardController extends AbstractController
                     continue;
                 }
 
-                $instance = $this->resolveService($serviceClass);
+                $instance = $this->resolveService($serviceClass, $sdk);
                 $args = [];
                 foreach ($method->getParameters() as $parameter) {
                     if ($parameter->getName() === 'limit') {
@@ -76,13 +78,12 @@ final class DashboardController extends AbstractController
             }
         }
 
-        $client = $this->bootstrap->client();
+        $client = $this->bootstrap->clientForRequest($request, $apiKey);
         return $client->request('GET', '/customers', ['limit' => 1]);
     }
 
-    private function resolveService(string $class): object
+    private function resolveService(string $class, object $sdk): object
     {
-        $sdk = $this->bootstrap->sdk();
         $short = (new \ReflectionClass($class))->getShortName();
         $property = lcfirst(str_replace('Service', '', $short));
 

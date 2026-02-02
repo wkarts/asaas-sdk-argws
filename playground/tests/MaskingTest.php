@@ -17,8 +17,8 @@ final class MaskingTest extends TestCase
             'name' => 'Cliente',
         ]);
 
-        $this->assertSame('123****890', $masked['api_key']);
-        $this->assertSame('******', $masked['token']);
+        $this->assertSame('[REDACTED]', $masked['api_key']);
+        $this->assertSame('[REDACTED]', $masked['token']);
         $this->assertSame('Cliente', $masked['name']);
     }
 }

@@ -1,0 +1,24 @@
+services:
+  playground:
+    image: ${DOCKERHUB_USERNAME}/asaas-sdk-argws-playground:latest
+    env_file: .env
+    volumes:
+      - ./storage:/app/storage
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - playground
+
+volumes:
+  caddy_data:
+  caddy_config:

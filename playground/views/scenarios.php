@@ -23,7 +23,7 @@ ob_start();
             const form = new FormData();
             form.append('action', button.dataset.action);
             form.append('params', document.getElementById('params').value);
-            const response = await fetch('/scenarios/run', { method: 'POST', body: form });
+            const response = await fetch('/scenarios/run', { method: 'POST', body: form, headers: window.playgroundHeaders() });
             const data = await response.json();
             result.textContent = JSON.stringify(data, null, 2);
         });

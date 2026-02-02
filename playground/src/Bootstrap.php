@@ -11,6 +11,7 @@ use Asaas\Sdk\Http\Environment;
 use Dotenv\Dotenv;
 use Playground\Storage\Migrate;
 use Playground\Storage\Sqlite;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\Factory\AppFactory;
 use Slim\App;
 
@@ -44,13 +45,7 @@ final class Bootstrap
             return $this->sdk;
         }
 
-        $config = new AsaasConfig(
-            $this->env('ASAAS_API_KEY', ''),
-            $this->environment(),
-            $this->env('ASAAS_APP_NAME', 'Asaas Playground'),
-            (float) $this->env('ASAAS_TIMEOUT', '30'),
-            (float) $this->env('ASAAS_CONNECT_TIMEOUT', '10')
-        );
+        $config = $this->configFor(null, null);
 
         $this->sdk = new AsaasSdk($config);
         $this->client = new Client(
@@ -73,6 +68,32 @@ final class Bootstrap
         $this->sdk();
 
         return $this->client;
+    }
+
+    public function sdkForRequest(ServerRequestInterface $request, ?string $apiKeyOverride = null): AsaasSdk
+    {
+        $config = $this->configFor(
+            $apiKeyOverride,
+            $this->extractEnvHeader($request)
+        );
+
+        return new AsaasSdk($config);
+    }
+
+    public function clientForRequest(ServerRequestInterface $request, ?string $apiKeyOverride = null): Client
+    {
+        $config = $this->configFor(
+            $apiKeyOverride,
+            $this->extractEnvHeader($request)
+        );
+
+        return new Client(
+            $config->apiKey,
+            $config->environment,
+            $config->appName,
+            $config->timeout,
+            $config->connectTimeout
+        );
     }
 
     public function db(): Sqlite
@@ -102,11 +123,39 @@ final class Bootstrap
         return $env === 'production' ? Environment::Production : Environment::Sandbox;
     }
 
+    public function environmentFromString(?string $env): Environment
+    {
+        $env = strtolower((string) $env);
+
+        return $env === 'production' ? Environment::Production : Environment::Sandbox;
+    }
+
     private function loadEnv(): void
     {
         $envPath = $this->basePath . '/.env';
         if (is_file($envPath)) {
             Dotenv::createImmutable($this->basePath)->safeLoad();
         }
+    }
+
+    private function extractEnvHeader(ServerRequestInterface $request): ?string
+    {
+        $header = $request->getHeaderLine('X-Asaas-Env');
+
+        return $header !== '' ? $header : null;
+    }
+
+    private function configFor(?string $apiKeyOverride, ?string $envOverride): AsaasConfig
+    {
+        $apiKey = $apiKeyOverride ?? $this->env('ASAAS_API_KEY', '');
+        $environment = $envOverride ? $this->environmentFromString($envOverride) : $this->environment();
+
+        return new AsaasConfig(
+            $apiKey,
+            $environment,
+            $this->env('ASAAS_APP_NAME', 'Asaas Playground'),
+            (float) $this->env('ASAAS_TIMEOUT', '30'),
+            (float) $this->env('ASAAS_CONNECT_TIMEOUT', '10')
+        );
     }
 }
