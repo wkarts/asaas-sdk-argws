@@ -1,0 +1,4 @@
+playground-asaas-sdk.argws.com.br {
+    encode gzip
+    reverse_proxy playground:8080
+}

@@ -64,3 +64,7 @@ Você pode verificar status da API com uma chamada leve (ex.: `listPayments` com
 
 Este projeto **não é oficial** e **não é afiliado** ao Asaas.  
 Asaas é marca registrada de seus respectivos proprietários.
+
+## Playground
+
+Veja instruções completas em `/playground`.
