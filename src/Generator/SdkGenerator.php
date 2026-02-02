@@ -178,9 +178,13 @@ final class SdkGenerator
 
     private function normalizeOperationId(string $operationId): string
     {
-        $operationId = preg_replace('/[^a-zA-Z0-9]+/', ' ', $operationId) ?? $operationId;
-        $operationId = ucwords(strtolower($operationId));
-        $operationId = str_replace(' ', '', $operationId);
+        $segments = preg_split('/[^a-zA-Z0-9]+/', $operationId) ?: [];
+        $segments = array_filter($segments, static fn (string $segment): bool => $segment !== '');
+        $segments = array_map(
+            static fn (string $segment): string => ucfirst($segment),
+            $segments
+        );
+        $operationId = implode('', $segments);
 
         return lcfirst($operationId);
     }

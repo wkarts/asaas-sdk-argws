@@ -26,16 +26,7 @@ final class OpenApiBuilder
         $html = ($this->httpGet)($baseUrl);
         $slugs = $this->extractSlugs($html);
 
-        $merged = [
-            'openapi' => '3.0.0',
-            'info' => ['title' => 'Asaas API', 'version' => '1.0.0'],
-            'paths' => [],
-            'components' => [
-                'schemas' => [],
-                'securitySchemes' => [],
-            ],
-            'tags' => [],
-        ];
+        $merged = $this->emptyDocument();
 
         foreach ($slugs as $slug) {
             $markdown = ($this->httpGet)(sprintf('https://docs.asaas.com/reference/%s.md', $slug));
@@ -64,11 +55,28 @@ final class OpenApiBuilder
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function emptyDocument(): array
+    {
+        return [
+            'openapi' => '3.0.0',
+            'info' => ['title' => 'Asaas API', 'version' => '1.0.0'],
+            'paths' => [],
+            'components' => [
+                'schemas' => [],
+                'securitySchemes' => [],
+            ],
+            'tags' => [],
+        ];
+    }
+
+    /**
      * @return string[]
      */
     public function extractSlugs(string $html): array
     {
-        preg_match_all('#/reference/([a-z0-9\-]+)#i', $html, $matches);
+        preg_match_all('#href=[\'"](?:https?://docs\.asaas\.com)?/reference/([a-z0-9\-]+)#i', $html, $matches);
 
         return array_values(array_unique($matches[1]));
     }

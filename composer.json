@@ -27,6 +27,10 @@
   "scripts": {
     "asaas:build-openapi": "php bin/build-openapi.php",
     "asaas:generate": "php bin/generate-sdk.php",
+    "asaas:sdk-build": [
+      "php bin/build-openapi.php",
+      "php bin/generate-sdk.php"
+    ],
     "asaas:verify": "php bin/verify-parity.php",
     "test": "phpunit",
     "lint": [
