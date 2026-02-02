@@ -2,7 +2,6 @@
 /.phpunit.result.cache
 /.idea/
 /.vscode/
-/resources/openapi.json
 
 playground/.env
 playground/vendor/

@@ -122,7 +122,7 @@ final class ScenariosController extends AbstractController
         ServerRequestInterface $request,
         ?string $apiKey
     ): mixed {
-        $target = $this->findMethod($catalog, ['customer'], ['list', 'getAll', 'find']);
+        $target = $this->findMethod($catalog, ['customer'], ['list', 'getAll', 'find', 'get']);
         if ($target === null) {
             throw new \RuntimeException('Método de listagem de clientes não encontrado. Use o Explorer.');
         }
@@ -178,7 +178,7 @@ final class ScenariosController extends AbstractController
         ServerRequestInterface $request,
         ?string $apiKey
     ): mixed {
-        $target = $this->findMethod($catalog, ['payment'], ['list', 'getAll', 'find']);
+        $target = $this->findMethod($catalog, ['payment'], ['list', 'getAll', 'find', 'get']);
         if ($target === null) {
             throw new \RuntimeException('Método de listagem de cobranças não encontrado. Use o Explorer.');
         }

@@ -6,7 +6,7 @@ namespace Asaas\\Sdk\\Service\\Generated;
 
 use Asaas\\Sdk\\Service\\AbstractService;
 
-final class AccountInfoService extends AbstractService
+final class AutomaticPixService extends AbstractService
 {
     /**
      * @param array<string, string> $pathParams
@@ -14,7 +14,7 @@ final class AccountInfoService extends AbstractService
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
      */
-    public function updateBusinessData(
+    public function createAnAutomaticPixAuthorization(
         array $pathParams = [],
         array $query = [],
         array $headers = [],
@@ -22,7 +22,7 @@ final class AccountInfoService extends AbstractService
     ): mixed {
         return $this->request(
             'POST',
-            '/v3/myAccount/commercialInfo/',
+            '/v3/pix/automatic/authorizations',
             $pathParams,
             $query,
             $headers,
@@ -38,7 +38,7 @@ final class AccountInfoService extends AbstractService
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
      */
-    public function retrieveBusinessData(
+    public function listAutomaticPixAuthorizations(
         array $pathParams = [],
         array $query = [],
         array $headers = [],
@@ -46,7 +46,7 @@ final class AccountInfoService extends AbstractService
     ): mixed {
         return $this->request(
             'GET',
-            '/v3/myAccount/commercialInfo/',
+            '/v3/pix/automatic/authorizations',
             $pathParams,
             $query,
             $headers,
@@ -62,31 +62,7 @@ final class AccountInfoService extends AbstractService
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
      */
-    public function savePaymentCheckoutPersonalization(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            'POST',
-            '/v3/myAccount/paymentCheckoutConfig/',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            true,
-            false
-        );
-    }
-
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function retrievePersonalizationSettings(
+    public function retrieveASingleAutomaticPixAuthorization(
         array $pathParams = [],
         array $query = [],
         array $headers = [],
@@ -94,7 +70,7 @@ final class AccountInfoService extends AbstractService
     ): mixed {
         return $this->request(
             'GET',
-            '/v3/myAccount/paymentCheckoutConfig/',
+            '/v3/pix/automatic/authorizations/{id}',
             $pathParams,
             $query,
             $headers,
@@ -110,103 +86,7 @@ final class AccountInfoService extends AbstractService
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
      */
-    public function retrieveAsaasAccountNumber(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            'GET',
-            '/v3/myAccount/accountNumber',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            false,
-            false
-        );
-    }
-
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function retrieveAccountFees(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            'GET',
-            '/v3/myAccount/fees/',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            false,
-            false
-        );
-    }
-
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function checkAccountRegistrationStatus(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            'GET',
-            '/v3/myAccount/status/',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            false,
-            false
-        );
-    }
-
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function retrieveWalletid(
-        array $pathParams = [],
-        array $query = [],
-        array $headers = [],
-        ?array $payload = null
-    ): mixed {
-        return $this->request(
-            'GET',
-            '/v3/wallets/',
-            $pathParams,
-            $query,
-            $headers,
-            $payload,
-            false,
-            false
-        );
-    }
-
-    /**
-     * @param array<string, string> $pathParams
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
-     */
-    public function deleteWhiteLabelSubaccount(
+    public function cancelAnAutomaticPixAuthorization(
         array $pathParams = [],
         array $query = [],
         array $headers = [],
@@ -214,7 +94,55 @@ final class AccountInfoService extends AbstractService
     ): mixed {
         return $this->request(
             'DELETE',
-            '/v3/myAccount/',
+            '/v3/pix/automatic/authorizations/{id}',
+            $pathParams,
+            $query,
+            $headers,
+            $payload,
+            false,
+            false
+        );
+    }
+
+    /**
+     * @param array<string, string> $pathParams
+     * @param array<string, mixed> $query
+     * @param array<string, string> $headers
+     * @param array<string, mixed>|null $payload
+     */
+    public function retrieveASingleAutomaticPixPaymentInstruction(
+        array $pathParams = [],
+        array $query = [],
+        array $headers = [],
+        ?array $payload = null
+    ): mixed {
+        return $this->request(
+            'GET',
+            '/v3/pix/automatic/paymentInstructions/{id}',
+            $pathParams,
+            $query,
+            $headers,
+            $payload,
+            false,
+            false
+        );
+    }
+
+    /**
+     * @param array<string, string> $pathParams
+     * @param array<string, mixed> $query
+     * @param array<string, string> $headers
+     * @param array<string, mixed>|null $payload
+     */
+    public function listAutomaticPixPaymentInstructions(
+        array $pathParams = [],
+        array $query = [],
+        array $headers = [],
+        ?array $payload = null
+    ): mixed {
+        return $this->request(
+            'GET',
+            '/v3/pix/automatic/paymentInstructions',
             $pathParams,
             $query,
             $headers,
