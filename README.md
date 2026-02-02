@@ -67,4 +67,4 @@ Asaas é marca registrada de seus respectivos proprietários.
 
 ## Playground
 
-Veja instruções completas em `/playground`.
+https://playground-asaas-sdk.argws.com.br
