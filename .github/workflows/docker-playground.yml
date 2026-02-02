@@ -4,10 +4,10 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'playground/**'
+      - "playground/**"
   pull_request:
     paths:
-      - 'playground/**'
+      - "playground/**"
   workflow_dispatch:
 
 jobs:
@@ -24,22 +24,19 @@ jobs:
         id: meta
         shell: bash
         run: |
+          set -euo pipefail
+
           PUSH=false
           TAGS="asaas-sdk-argws-playground:ci-${GITHUB_SHA}"
 
-          if [ "${{ github.event_name }}" = "push" ] \
-            && [ "${{ github.ref }}" = "refs/heads/main" ] \
-            && [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] \
-            && [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" \
+                && -n "${{ secrets.DOCKERHUB_USERNAME }}" && -n "${{ secrets.DOCKERHUB_TOKEN }}" ]]; then
             PUSH=true
-            TAGS="${{ secrets.DOCKERHUB_USERNAME }}/asaas-sdk-argws-playground:latest
-${{ secrets.DOCKERHUB_USERNAME }}/asaas-sdk-argws-playground:sha-${GITHUB_SHA}"
+            TAGS="${{ secrets.DOCKERHUB_USERNAME }}/asaas-sdk-argws-playground:latest,${{ secrets.DOCKERHUB_USERNAME }}/asaas-sdk-argws-playground:sha-${GITHUB_SHA}"
           fi
 
           echo "push=$PUSH" >> "$GITHUB_OUTPUT"
-          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$TAGS" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
       - name: Login to Docker Hub
         if: steps.meta.outputs.push == 'true'
