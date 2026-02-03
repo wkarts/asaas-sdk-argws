@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Asaas\Sdk\Service;
 
-use Asaas\Sdk\Client\Client;
+use Asaas\Sdk\Http\Client;
 use Asaas\Sdk\Service\Generated\AccountDocumentService as GeneratedAccountDocumentService;
 
 /**

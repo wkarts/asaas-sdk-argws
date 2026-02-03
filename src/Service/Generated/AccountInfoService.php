@@ -6,7 +6,7 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-final class AccountInfoService extends AbstractService
+class AccountInfoService extends AbstractService
 {
     /**
      * @param array<string, string> $pathParams

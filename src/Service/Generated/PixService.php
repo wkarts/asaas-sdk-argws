@@ -6,7 +6,7 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-final class PixService extends AbstractService
+class PixService extends AbstractService
 {
     /**
      * @param array<string, string> $pathParams
