@@ -6,7 +6,7 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-final class {{className}} extends AbstractService
+class {{className}} extends AbstractService
 {
 {{methods}}
 }
