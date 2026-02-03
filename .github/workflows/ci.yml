@@ -25,8 +25,8 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
       - run: composer install --no-interaction --prefer-dist      
-      #- run: composer asaas:sdk-build
-      #- run: git diff --exit-code
+      - run: composer asaas:sdk-build
+      - run: git diff --exit-code
       - run: composer test
       - run: composer lint
       - run: php bin/verify-parity.php
