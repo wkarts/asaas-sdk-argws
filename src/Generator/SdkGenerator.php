@@ -179,9 +179,9 @@ final class SdkGenerator
     private function normalizeOperationId(string $operationId): string
     {
         $segments = preg_split('/[^a-zA-Z0-9]+/', $operationId) ?: [];
-        $segments = array_filter($segments, static fn (string $segment): bool => $segment !== '');
+        $segments = array_filter($segments, static fn(string $segment): bool => $segment !== '');
         $segments = array_map(
-            static fn (string $segment): string => ucfirst($segment),
+            static fn(string $segment): string => ucfirst($segment),
             $segments
         );
         $operationId = implode('', $segments);

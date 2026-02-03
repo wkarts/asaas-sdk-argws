@@ -31,7 +31,7 @@ try {
     $requests = static function (array $slugs) use ($client): Generator {
         foreach ($slugs as $slug) {
             $url = sprintf('https://docs.asaas.com/reference/%s.md', $slug);
-            yield static fn () => $client->getAsync($url);
+            yield static fn() => $client->getAsync($url);
         }
     };
 

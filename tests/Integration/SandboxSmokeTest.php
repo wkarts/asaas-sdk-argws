@@ -23,8 +23,8 @@ final class SandboxSmokeTest extends TestCase
 
         $sdk = new AsaasSdk(new AsaasConfig($apiKey, $env, $appName));
 
-		// listPayments não possui path params; o primeiro argumento do gerado é o array de path params.
-		$result = $sdk->payment->listPayments([], ['limit' => 1]);
+        // listPayments não possui path params; o primeiro argumento do gerado é o array de path params.
+        $result = $sdk->payment->listPayments([], ['limit' => 1]);
 
         self::assertIsArray($result);
     }
