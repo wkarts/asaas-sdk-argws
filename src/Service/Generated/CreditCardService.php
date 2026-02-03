@@ -6,10 +6,10 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-final class CreditCardService extends AbstractService
+class CreditCardService extends AbstractService
 {
     /**
-     * @param array<string, string> $pathParams
+     * @param array<string, scalar> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
