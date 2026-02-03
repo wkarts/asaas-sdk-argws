@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Asaas\\Sdk\\Model\\Generated;
+namespace Asaas\Sdk\Model\Generated;
 
-use Asaas\\Sdk\\Model\\Contracts\\ArraySerializable;
-use Asaas\\Sdk\\Util\\Serializer;
+use Asaas\Sdk\Model\Contracts\ArraySerializable;
+use Asaas\Sdk\Util\Serializer;
 
 final class {{className}} implements ArraySerializable
 {

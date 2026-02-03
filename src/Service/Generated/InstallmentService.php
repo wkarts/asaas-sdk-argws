@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Asaas\\Sdk\\Service\\Generated;
+namespace Asaas\Sdk\Service\Generated;
 
-use Asaas\\Sdk\\Service\\AbstractService;
+use Asaas\Sdk\Service\AbstractService;
 
 final class InstallmentService extends AbstractService
 {
