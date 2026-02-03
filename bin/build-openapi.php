@@ -11,6 +11,21 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $baseUrl = $argv[1] ?? 'https://docs.asaas.com/reference/comece-por-aqui';
 $output = $argv[2] ?? __DIR__ . '/../resources/openapi.json';
 
+// -----------------------------------------------------------------------------
+// Determinismo (CI)
+// -----------------------------------------------------------------------------
+// Por padrão, NÃO atualiza o resources/openapi.json se ele já existir.
+// Isso evita falhas no "git diff --exit-code" causadas por mudanças na doc remota.
+// Para forçar atualização (manual/local):
+//   ASAAS_UPDATE_OPENAPI=1 composer asaas:build-openapi
+// ou
+//   ASAAS_UPDATE_OPENAPI=1 composer asaas:sdk-build
+// -----------------------------------------------------------------------------
+if (file_exists($output) && getenv('ASAAS_UPDATE_OPENAPI') !== '1') {
+    fwrite(STDOUT, "OpenAPI já existe em {$output}. Pulando download (defina ASAAS_UPDATE_OPENAPI=1 para forçar).\n");
+    exit(0);
+}
+
 $client = new Client([
     'timeout' => 30,
     'connect_timeout' => 10,
