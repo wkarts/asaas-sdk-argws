@@ -6,10 +6,10 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-class FinanceService extends AbstractService
+final class FinanceService extends AbstractService
 {
     /**
-     * @param array<string, scalar> $pathParams
+     * @param array<string, string> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
@@ -33,7 +33,7 @@ class FinanceService extends AbstractService
     }
 
     /**
-     * @param array<string, scalar> $pathParams
+     * @param array<string, string> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
@@ -57,7 +57,7 @@ class FinanceService extends AbstractService
     }
 
     /**
-     * @param array<string, scalar> $pathParams
+     * @param array<string, string> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload

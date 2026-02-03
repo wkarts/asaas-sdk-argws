@@ -6,10 +6,10 @@ namespace Asaas\Sdk\Service\Generated;
 
 use Asaas\Sdk\Service\AbstractService;
 
-class NotificationService extends AbstractService
+final class NotificationService extends AbstractService
 {
     /**
-     * @param array<string, scalar> $pathParams
+     * @param array<string, string> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
@@ -33,7 +33,7 @@ class NotificationService extends AbstractService
     }
 
     /**
-     * @param array<string, scalar> $pathParams
+     * @param array<string, string> $pathParams
      * @param array<string, mixed> $query
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
