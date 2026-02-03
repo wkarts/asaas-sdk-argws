@@ -25,7 +25,7 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
       - run: composer install --no-interaction --prefer-dist      
-      - run: composer asaas:sdk-build
+      - run: composer asaas:generate
       - run: git diff --exit-code
       - run: composer test
       - run: composer lint
