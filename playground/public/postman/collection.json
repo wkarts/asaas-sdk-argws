@@ -1,0 +1,32 @@
+{
+  "info": {
+    "name": "Asaas SDK Proxy (Stub)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Catalog",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/sdk/catalog"
+      }
+    },
+    {
+      "name": "Call SDK Method",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"args\": [\n    {},\n    {},\n    {},\n    {}\n  ]\n}"
+        },
+        "url": "{{base_url}}/api/sdk/call/customer/listCustomers"
+      }
+    }
+  ]
+}

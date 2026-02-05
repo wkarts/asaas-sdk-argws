@@ -84,7 +84,9 @@ final class AsaasSdk
             $config->environment,
             $config->appName,
             $config->timeout,
-            $config->connectTimeout
+            $config->connectTimeout,
+            $config->logger,
+            $config->httpClient
         );
 
         $this->payment = new PaymentService($this->client);

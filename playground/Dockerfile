@@ -8,12 +8,17 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY composer.json composer.lock* ./
+COPY playground/composer.json playground/composer.lock* ./playground/
+
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm composer-setup.php
 
+WORKDIR /app/playground
+RUN test -f /app/playground/composer.json
 RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
 
+WORKDIR /app
 COPY . /app
 
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
