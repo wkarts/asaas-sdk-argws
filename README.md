@@ -68,3 +68,17 @@ Asaas é marca registrada de seus respectivos proprietários.
 ## Playground
 
 https://playground-asaas-sdk.argws.com.br
+
+## Release (tags v*)
+
+O workflow de release só roda quando você cria e envia uma tag **v***.  
+Exemplo:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+> **Packagist:** o update automático só acontece se os secrets estiverem configurados no GitHub
+> (por exemplo, credenciais de integração). Sem esses secrets, o release continua funcionando,
+> mas o Packagist não será atualizado automaticamente.

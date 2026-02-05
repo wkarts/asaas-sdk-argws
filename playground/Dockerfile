@@ -21,4 +21,6 @@ RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
 WORKDIR /app
 COPY . /app
 
+WORKDIR /app/playground
+
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
