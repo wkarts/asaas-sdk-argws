@@ -38,6 +38,10 @@ final class Routes
         $app->get('/openapi.json', [$sdkProxy, 'openapi']);
         $app->get('/swagger', [$sdkProxy, 'swagger']);
         $app->get('/scalar', [$sdkProxy, 'scalar']);
+
+        // compat: permite swagger/scalar usarem openapi.json relativo
+        $app->get('/swagger/openapi.json', [$sdkProxy, 'openapi']);
+        $app->get('/scalar/openapi.json', [$sdkProxy, 'openapi']);
         $app->get('/postman/collection.json', [$sdkProxy, 'postmanCollection']);
         $app->get('/postman/env/{env}.json', [$sdkProxy, 'postmanEnv']);
 
