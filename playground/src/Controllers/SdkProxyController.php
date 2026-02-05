@@ -8,6 +8,7 @@ use Asaas\Sdk\AsaasSdk;
 use Playground\Utils\ReflectionScanner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Slim\Psr7\Response;
 
 final class SdkProxyController extends AbstractController
 {
@@ -84,29 +85,43 @@ final class SdkProxyController extends AbstractController
 
     public function openapi(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json($this->openApiSpec($request));
+        return $this->fileResponse(
+            $this->bootstrap->basePath() . '/public/openapi.json',
+            'application/json'
+        );
     }
 
     public function swagger(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->render('swagger');
+        return $this->fileResponse(
+            $this->bootstrap->basePath() . '/public/swagger/index.html',
+            'text/html'
+        );
     }
 
     public function scalar(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->render('scalar');
+        return $this->fileResponse(
+            $this->bootstrap->basePath() . '/public/scalar/index.html',
+            'text/html'
+        );
     }
 
     public function postmanCollection(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json($this->postmanCollectionSpec($request));
+        return $this->fileResponse(
+            $this->bootstrap->basePath() . '/public/postman/collection.json',
+            'application/json'
+        );
     }
 
     public function postmanEnv(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $env = (string) ($args['env'] ?? '');
 
-        return $this->json($this->postmanEnvSpec($request, $env));
+        $path = $this->bootstrap->basePath() . '/public/postman/env/' . $env . '.json';
+
+        return $this->fileResponse($path, 'application/json');
     }
 
     private function resolveServiceClass(string $service): ?string
@@ -159,215 +174,6 @@ final class SdkProxyController extends AbstractController
         return [$pathParams, $query, $headers, $payload];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function openApiSpec(ServerRequestInterface $request): array
-    {
-        $serverUrl = $this->buildServerUrl($request);
-
-        return [
-            'openapi' => '3.0.3',
-            'info' => [
-                'title' => 'Asaas SDK Proxy',
-                'version' => '1.0.0',
-                'description' => 'Proxy HTTP para executar métodos da SDK Asaas via REST.',
-            ],
-            'servers' => [
-                ['url' => $serverUrl],
-            ],
-            'paths' => [
-                '/api/sdk/catalog' => [
-                    'get' => [
-                        'summary' => 'Lista services e métodos disponíveis',
-                        'responses' => [
-                            '200' => [
-                                'description' => 'Catálogo da SDK',
-                                'content' => [
-                                    'application/json' => [
-                                        'schema' => [
-                                            'type' => 'object',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                '/api/sdk/call/{service}/{method}' => [
-                    'post' => [
-                        'summary' => 'Executa um método da SDK',
-                        'parameters' => [
-                            [
-                                'name' => 'service',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'string'],
-                            ],
-                            [
-                                'name' => 'method',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'string'],
-                            ],
-                        ],
-                        'requestBody' => [
-                            'required' => false,
-                            'content' => [
-                                'application/json' => [
-                                    'schema' => [
-                                        '$ref' => '#/components/schemas/ProxyCallRequest',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => [
-                                'description' => 'Resposta padrão do proxy',
-                                'content' => [
-                                    'application/json' => [
-                                        'schema' => [
-                                            '$ref' => '#/components/schemas/ProxyCallResponse',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            'components' => [
-                'schemas' => [
-                    'ProxyCallRequest' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'args' => [
-                                'type' => 'array',
-                                'items' => [
-                                    'oneOf' => [
-                                        ['type' => 'object'],
-                                        ['type' => 'array'],
-                                        ['type' => 'null'],
-                                    ],
-                                ],
-                                'example' => [
-                                    ['id' => 'cus_123'],
-                                    ['limit' => 10],
-                                    ['Content-Type' => 'application/json'],
-                                    ['name' => 'Cliente teste'],
-                                ],
-                            ],
-                            'meta' => [
-                                'type' => 'object',
-                                'additionalProperties' => true,
-                                'example' => [
-                                    'api_key' => 'SUA_CHAVE',
-                                ],
-                            ],
-                        ],
-                    ],
-                    'ProxyCallResponse' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'success' => ['type' => 'boolean'],
-                            'duration_ms' => ['type' => 'integer'],
-                            'response' => ['nullable' => true],
-                            'error' => ['type' => 'string', 'nullable' => true],
-                        ],
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function postmanCollectionSpec(ServerRequestInterface $request): array
-    {
-        $baseUrl = '{{base_url}}';
-
-        return [
-            'info' => [
-                'name' => 'Asaas SDK Proxy',
-                'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-            ],
-            'item' => [
-                [
-                    'name' => 'Catalog',
-                    'request' => [
-                        'method' => 'GET',
-                        'header' => [
-                            ['key' => 'X-Asaas-Api-Key', 'value' => '{{asaas_api_key}}'],
-                            ['key' => 'X-Asaas-Env', 'value' => '{{asaas_env}}'],
-                        ],
-                        'url' => [
-                            'raw' => $baseUrl . '/api/sdk/catalog',
-                            'host' => [$baseUrl],
-                            'path' => ['api', 'sdk', 'catalog'],
-                        ],
-                    ],
-                ],
-                [
-                    'name' => 'Call SDK Method',
-                    'request' => [
-                        'method' => 'POST',
-                        'header' => [
-                            ['key' => 'Content-Type', 'value' => 'application/json'],
-                            ['key' => 'X-Asaas-Api-Key', 'value' => '{{asaas_api_key}}'],
-                            ['key' => 'X-Asaas-Env', 'value' => '{{asaas_env}}'],
-                        ],
-                        'body' => [
-                            'mode' => 'raw',
-                            'raw' => json_encode([
-                                'args' => [
-                                    ['id' => 'cus_123'],
-                                    [],
-                                    [],
-                                    [],
-                                ],
-                            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-                        ],
-                        'url' => [
-                            'raw' => $baseUrl . '/api/sdk/call/customer/listCustomers',
-                            'host' => [$baseUrl],
-                            'path' => ['api', 'sdk', 'call', 'customer', 'listCustomers'],
-                        ],
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function postmanEnvSpec(ServerRequestInterface $request, string $env): array
-    {
-        $resolvedEnv = $env === 'prod' || $env === 'production' ? 'production' : 'sandbox';
-
-        return [
-            'name' => 'Asaas SDK Proxy (' . $resolvedEnv . ')',
-            'values' => [
-                [
-                    'key' => 'base_url',
-                    'value' => $this->buildServerUrl($request),
-                    'enabled' => true,
-                ],
-                [
-                    'key' => 'asaas_api_key',
-                    'value' => '',
-                    'enabled' => true,
-                ],
-                [
-                    'key' => 'asaas_env',
-                    'value' => $resolvedEnv,
-                    'enabled' => true,
-                ],
-            ],
-        ];
-    }
-
     private function buildServerUrl(ServerRequestInterface $request): string
     {
         $uri = $request->getUri();
@@ -377,5 +183,22 @@ final class SdkProxyController extends AbstractController
         $portPart = $port && !in_array($port, [80, 443], true) ? ':' . $port : '';
 
         return $scheme . '://' . $host . $portPart;
+    }
+
+    private function fileResponse(string $path, string $contentType): ResponseInterface
+    {
+        if (!is_file($path)) {
+            return $this->json(['error' => 'Arquivo não encontrado.'], 404);
+        }
+
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return $this->json(['error' => 'Falha ao ler arquivo.'], 500);
+        }
+
+        $response = new Response();
+        $response->getBody()->write($contents);
+
+        return $response->withHeader('Content-Type', $contentType);
     }
 }
