@@ -4,21 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "21a112242753be3042fef81e6c8721c9",
+    "content-hash": "3211f4f6efc05b66d9263c3bfeff579d",
     "packages": [
         {
             "name": "argws/asaas-sdk-php",
-            "version": "v0.1.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wkarts/asaas-sdk-argws.git",
-                "reference": "e7100152636f6a0d9f09a17ec14437fb035ad4b8"
-            },
+            "version": "dev-work",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wkarts/asaas-sdk-argws/zipball/e7100152636f6a0d9f09a17ec14437fb035ad4b8",
-                "reference": "e7100152636f6a0d9f09a17ec14437fb035ad4b8",
-                "shasum": ""
+                "type": "path",
+                "url": "..",
+                "reference": "6a6d9a99a74bb167726a340b4101f2f75a9f5b1b"
             },
             "require": {
                 "ext-json": "*",
@@ -37,16 +31,40 @@
                     "Asaas\\Sdk\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Asaas\\Sdk\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "asaas:build-openapi": [
+                    "php bin/build-openapi.php"
+                ],
+                "asaas:generate": [
+                    "php bin/generate-sdk.php"
+                ],
+                "asaas:sdk-build": [
+                    "php bin/build-openapi.php",
+                    "php bin/generate-sdk.php"
+                ],
+                "asaas:verify": [
+                    "php bin/verify-parity.php"
+                ],
+                "test": [
+                    "phpunit"
+                ],
+                "lint": [
+                    "phpstan analyse",
+                    "php-cs-fixer fix --dry-run --diff"
+                ]
+            },
             "license": [
                 "MIT"
             ],
             "description": "SDK PHP NÃO OFICIAL para a API do Asaas. Baseada na SDK Java e gerada a partir da documentação/OpenAPI.",
-            "support": {
-                "issues": "https://github.com/wkarts/asaas-sdk-argws/issues",
-                "source": "https://github.com/wkarts/asaas-sdk-argws/tree/v0.1.3"
-            },
-            "time": "2026-02-01T04:28:53+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "fig/http-message-util",
@@ -3307,9 +3325,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {},
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
