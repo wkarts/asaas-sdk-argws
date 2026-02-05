@@ -5,6 +5,15 @@ ob_start();
 <div class="card">
     <h2>Dashboard</h2>
     <p>Ambiente: <strong><?= htmlspecialchars($env) ?></strong></p>
+    <p>Links rápidos:</p>
+    <ul>
+        <li><a href="/explorer">Explorer</a></li>
+        <li><a href="/api/sdk/catalog">Catálogo SDK (API)</a></li>
+        <li><a href="/swagger">Swagger UI</a></li>
+        <li><a href="/scalar">Scalar UI</a></li>
+        <li><a href="/openapi.json">OpenAPI JSON</a></li>
+        <li><a href="/postman/collection.json">Postman Collection</a></li>
+    </ul>
     <button id="healthcheck">Healthcheck</button>
     <pre id="healthResult">Clique para testar /health</pre>
 </div>
