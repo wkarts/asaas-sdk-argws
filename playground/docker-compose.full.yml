@@ -1,9 +1,11 @@
 services:
   playground:
-    image: ${DOCKERHUB_USERNAME}/asaas-sdk-argws-playground:latest
+    build:
+      context: ..
+      dockerfile: playground/Dockerfile
     env_file: .env
     volumes:
-      - ./storage:/app/storage
+      - ./storage:/app/playground/storage
     restart: unless-stopped
 
   caddy:

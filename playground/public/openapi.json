@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Asaas SDK Proxy (Stub)",
+    "version": "0.0.1",
+    "description": "Esqueleto inicial do proxy da SDK Asaas."
+  },
+  "paths": {
+    "/api/sdk/catalog": {
+      "get": {
+        "summary": "Lista services e métodos disponíveis",
+        "responses": {
+          "200": {
+            "description": "Catálogo da SDK"
+          }
+        }
+      }
+    },
+    "/api/sdk/call/{service}/{method}": {
+      "post": {
+        "summary": "Executa um método da SDK",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta padrão do proxy"
+          }
+        }
+      }
+    }
+  }
+}

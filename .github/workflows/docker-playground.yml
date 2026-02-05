@@ -27,7 +27,7 @@ jobs:
       - name: Build (CI)
         uses: docker/build-push-action@v5
         with:
-          context: ./playground
+          context: .
           file: ./playground/Dockerfile
           push: false
           tags: asaas-sdk-argws-playground:ci-${{ github.sha }}
@@ -89,7 +89,7 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v5
         with:
-          context: ./playground
+          context: .
           file: ./playground/Dockerfile
           push: true
           tags: ${{ steps.tags.outputs.tags }}

@@ -1,8 +1,10 @@
 services:
   playground:
-    build: .
+    build:
+      context: ..
+      dockerfile: playground/Dockerfile
     ports:
       - "8080:8080"
     env_file: .env
     volumes:
-      - ./storage:/app/storage
+      - ./storage:/app/playground/storage
