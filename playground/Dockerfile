@@ -14,6 +14,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && rm composer-setup.php
 
 WORKDIR /app/playground
+RUN test -f /app/playground/composer.json
 RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
 
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
