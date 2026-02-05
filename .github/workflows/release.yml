@@ -1,6 +1,12 @@
 name: Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão da tag (ex: v1.2.3). Se vazio, calcula PATCH automaticamente.'
+        required: false
+        default: ''
   push:
     tags:
       - 'v*'
@@ -9,22 +15,96 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  create_tag:
+    # Só cria tag quando for disparo manual.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    env:
-      PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
-      PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
-      PACKAGIST_PACKAGE_URL: ${{ secrets.PACKAGIST_PACKAGE_URL }}
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
-      - name: Criar Release no GitHub
+        with:
+          fetch-depth: 0
+          # IMPORTANTE: para que o push de tag dispare outros workflows, use um PAT (se existir).
+          # Se você não configurar RELEASE_TOKEN, ainda funciona, mas o push de tag pode NÃO disparar workflows.
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Buscar tags
+        run: git fetch --tags --force
+
+      - name: Definir tag
+        id: tag
+        shell: bash
+        run: |
+          INPUT_VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            TAG="$INPUT_VERSION"
+          else
+            LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+            if [ -z "$LAST_TAG" ]; then
+              TAG="v0.1.0"
+            else
+              VERSION="${LAST_TAG#v}"
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+              PATCH=$((PATCH + 1))
+              TAG="v${MAJOR}.${MINOR}.${PATCH}"
+            fi
+          fi
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG já existe." >&2
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Criar e push da tag
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [create_tag]
+    # Em workflow_dispatch, usa a tag criada; em push tags, usa a tag do evento.
+    env:
+      TAG_NAME: ${{ needs.create_tag.outputs.tag || github.ref_name }}
+      PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+      PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+      # Pode ser a URL do repositório (GitHub) OU a URL do pacote no Packagist.
+      # Exemplo GitHub: https://github.com/argws/asaas-sdk-php
+      # Exemplo Packagist: https://packagist.org/packages/argws/asaas-sdk-php
+      PACKAGIST_REPOSITORY: ${{ secrets.PACKAGIST_REPOSITORY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Criar release no GitHub
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG_NAME }}
           generate_release_notes: true
-      - name: Atualizar Packagist via API (opcional)
-        if: env.PACKAGIST_USERNAME != '' && env.PACKAGIST_TOKEN != '' && env.PACKAGIST_PACKAGE_URL != ''
+
+      - name: Atualizar Packagist (Composer)
+        shell: bash
         run: |
-          curl -sS -X POST \
-            -H 'Content-Type: application/json' \
-            "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}" \
-            -d "{\"repository\":{\"url\":\"${PACKAGIST_PACKAGE_URL}\"}}"
+          if [ -z "$PACKAGIST_USERNAME" ] || [ -z "$PACKAGIST_TOKEN" ]; then
+            echo "Packagist secrets ausentes, pulando update."
+            exit 0
+          fi
+
+          # Se você não setar PACKAGIST_REPOSITORY, cai para o repo atual do GitHub.
+          REPO_URL="$PACKAGIST_REPOSITORY"
+          if [ -z "$REPO_URL" ]; then
+            REPO_URL="${{ github.server_url }}/${{ github.repository }}"
+          fi
+
+          curl -fsSL -X POST "https://packagist.org/api/update-package" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${PACKAGIST_USERNAME}:${PACKAGIST_TOKEN}" \
+            -d "{\"repository\":\"${REPO_URL}\"}"

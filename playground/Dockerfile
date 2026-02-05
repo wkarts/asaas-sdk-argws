@@ -7,22 +7,22 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY composer.json composer.lock* ./
-COPY playground/composer.json playground/composer.lock* ./playground/
+# Este Dockerfile foi ajustado para funcionar com build context apontando para a pasta playground
+# OU para a raiz do repositório. Se o build context for a raiz, o compose abaixo já aponta para ./playground.
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm composer-setup.php
 
 WORKDIR /app/playground
-RUN test -f /app/playground/composer.json
+
+# Copia só o que precisa para instalar dependências (melhora cache do Docker)
+COPY composer.json composer.lock* ./
+
 RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
 
-WORKDIR /app
-COPY . /app
+# Copia o restante do playground (public/, src/, views/, etc.)
+COPY . ./
 
-WORKDIR /app/playground
-
-
-# Entrypoint resiliente (docroot absoluto)
-ENTRYPOINT ["/app/playground/docker/entrypoint.sh"]
+# Usa router file para o Slim tratar as rotas corretamente
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public", "public/index.php"]
