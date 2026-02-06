@@ -118,14 +118,41 @@ final class SdkProxyController extends AbstractController
         $scanner = new ReflectionScanner($this->bootstrap->basePath());
         $catalog = $scanner->catalog();
 
-        $services = array_values(array_filter(
-            $catalog['services'],
-            fn(string $class): bool => !str_contains($class, '\\Generated\\')
-        ));
+        // IMPORTANTE:
+        // A SDK (nesta repo) é majoritariamente gerada em Asaas\Sdk\Service\Generated.
+        // Se filtrarmos "\\Generated\\" aqui, o OpenAPI fica sem endpoints (Swagger mostra só "/").
+        // Portanto, no OpenAPI devemos incluir TODAS as services detectadas.
+        $services = array_values($catalog['services']);
 
         $spec = $this->buildOpenApiSpec($request, $services, $catalog['methods'] ?? []);
 
         return $this->json($spec);
+    }
+
+    public function version(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $package = 'argws/asaas-sdk-php';
+        $version = null;
+        $pretty = null;
+        $reference = null;
+
+        // Se o playground estiver instalado via Composer (o normal), conseguimos ler a versão instalada.
+        if (class_exists('Composer\\InstalledVersions')) {
+            /** @var class-string $iv */
+            $iv = 'Composer\\InstalledVersions';
+            if ($iv::isInstalled($package)) {
+                $version = $iv::getVersion($package);
+                $pretty = $iv::getPrettyVersion($package);
+                $reference = $iv::getReference($package);
+            }
+        }
+
+        return $this->json([
+            'package' => $package,
+            'version' => $version,
+            'pretty_version' => $pretty,
+            'reference' => $reference,
+        ]);
     }
 
     public function swagger(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -249,9 +276,7 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec_(ServerRequestInterface $request, array $services, array $methodsByClass): array
     {
-        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
-        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
-        $serverUrl = '/';
+        $serverUrl = $this->buildServerUrl($request);
 
         $paths = [];
 
@@ -413,9 +438,7 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methods): array
     {
-        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
-        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
-        $serverUrl = '/';
+        $serverUrl = $this->buildServerUrl($request);
 
         $paths = [];
 
