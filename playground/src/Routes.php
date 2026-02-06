@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Playground;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Playground\Controllers\DashboardController;
 use Playground\Controllers\ExplorerController;
 use Playground\Controllers\LogsController;
@@ -46,10 +48,6 @@ final class Routes
             static fn(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface => $response->withStatus(204)
         );
         $app->get('/openapi.json', [$sdkProxy, 'openapi']);
-
-        // Metadados
-        $app->get('/api/sdk/version', [$sdkProxy, 'version']);
-
         $app->get('/swagger', [$sdkProxy, 'swagger']);
         $app->get('/scalar', [$sdkProxy, 'scalar']);
         $app->get('/postman/collection.json', [$sdkProxy, 'postmanCollection']);

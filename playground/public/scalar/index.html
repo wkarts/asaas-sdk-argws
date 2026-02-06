@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Scalar UI - Asaas SDK Playground</title>
+    <title>Scalar UI - Asaas SDK Proxy</title>
     <style>
       html, body { height: 100%; margin: 0; }
       #app { height: 100%; }
@@ -16,22 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
 
     <script>
-      // IMPORTANTE:
-      // Evita carregar /public/openapi.json estático/desatualizado.
-      // Garante que a UI use sempre a especificação dinâmica do Slim.
+      // OpenAPI gerado dinamicamente pela SDK instalada no playground
       Scalar.createApiReference('#app', {
         url: '/openapi.json'
       })
-
-      // Atualiza título com versão da SDK (se disponível)
-      fetch('/api/sdk/version')
-        .then(r => r.ok ? r.json() : null)
-        .then(d => {
-          if (d && d.package && d.version) {
-            document.title = `Scalar UI - Asaas SDK Playground (${d.version})`;
-          }
-        })
-        .catch(() => {});
     </script>
   </body>
 </html>
