@@ -649,4 +649,39 @@ final class SdkProxyController extends AbstractController
             ],
         ];
     }
+
+    private function readPayload(Request $request): array
+    {
+        $method = strtoupper($request->getMethod());
+    
+        if ($method === 'GET') {
+            $q = $request->getQueryParams();
+    
+            // aceita args/meta como JSON string
+            $args = [];
+            if (!empty($q['args'])) {
+                $decoded = json_decode($q['args'], true);
+                if (is_array($decoded)) $args = $decoded;
+            }
+    
+            $meta = [];
+            if (!empty($q['meta'])) {
+                $decoded = json_decode($q['meta'], true);
+                if (is_array($decoded)) $meta = $decoded;
+            }
+    
+            return [
+                'args' => $args,
+                'meta' => $meta,
+            ];
+        }
+    
+        // POST default (JSON)
+        $body = (string) $request->getBody();
+        $data = json_decode($body, true);
+        if (!is_array($data)) $data = [];
+    
+        return $data;
+    }
+    
 }
