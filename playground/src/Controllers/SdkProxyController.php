@@ -118,11 +118,10 @@ final class SdkProxyController extends AbstractController
         $scanner = new ReflectionScanner($this->bootstrap->basePath());
         $catalog = $scanner->catalog();
 
-        // IMPORTANTE:
-        // A SDK (nesta repo) é majoritariamente gerada em Asaas\Sdk\Service\Generated.
-        // Se filtrarmos "\\Generated\\" aqui, o OpenAPI fica sem endpoints (Swagger mostra só "/").
-        // Portanto, no OpenAPI devemos incluir TODAS as services detectadas.
-        $services = array_values($catalog['services']);
+        $services = array_values(array_filter(
+            $catalog['services'],
+            fn(string $class): bool => !str_contains($class, '\\Generated\\')
+        ));
 
         $spec = $this->buildOpenApiSpec($request, $services, $catalog['methods'] ?? []);
 
