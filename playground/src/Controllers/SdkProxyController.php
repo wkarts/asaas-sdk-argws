@@ -37,6 +37,20 @@ final class SdkProxyController extends AbstractController
         $methodName = (string) ($args['method'] ?? '');
         $payload = (array) $request->getParsedBody();
 
+        // Shorthand: se o body não seguir o formato {"args": [...]},
+        // tratamos o body como "payload" (4º argumento padrão da SDK).
+        // Isso permite usar curl enviando diretamente o objeto do recurso.
+        if (!array_key_exists('args', $payload) && $payload !== []) {
+            $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
+            $directPayload = $payload;
+            unset($directPayload['meta']);
+
+            $payload = [
+                'meta' => $meta,
+                'args' => [[], [], [], $directPayload],
+            ];
+        }
+
         // Permite chamadas GET (sem body) — útil para Swagger/Scalar/Browser.
         if (empty($payload) && strtoupper($request->getMethod()) === 'GET') {
             $qp = $request->getQueryParams();
@@ -213,10 +227,22 @@ final class SdkProxyController extends AbstractController
 
     private function buildServerUrl(ServerRequestInterface $request): string
     {
+        // Reverse proxy friendly: prioriza headers X-Forwarded-* quando presentes.
+        $xfHost = trim($request->getHeaderLine('X-Forwarded-Host'));
+        $xfProto = trim($request->getHeaderLine('X-Forwarded-Proto'));
+        $xfPort = trim($request->getHeaderLine('X-Forwarded-Port'));
+
         $uri = $request->getUri();
-        $host = $uri->getHost();
-        $scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'http';
-        $port = $uri->getPort();
+        $host = $xfHost !== '' ? explode(',', $xfHost)[0] : $uri->getHost();
+        $scheme = $xfProto !== '' ? explode(',', $xfProto)[0] : ($uri->getScheme() !== '' ? $uri->getScheme() : 'http');
+
+        $port = null;
+        if ($xfPort !== '' && ctype_digit(explode(',', $xfPort)[0])) {
+            $port = (int) explode(',', $xfPort)[0];
+        } elseif ($uri->getPort() !== null) {
+            $port = (int) $uri->getPort();
+        }
+
         $portPart = $port && !in_array($port, [80, 443], true) ? ':' . $port : '';
 
         return $scheme . '://' . $host . $portPart;
@@ -413,8 +439,9 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methods): array
     {
-        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
-        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
+        // Para deixar a UI mais clara, exibimos a URL real do host (incluindo reverse proxy via X-Forwarded-*).
+        // Também mantemos um server relativo para garantir compatibilidade em cenários com path-prefix.
+        $absoluteServerUrl = $this->buildServerUrl($request);
         $serverUrl = '/';
 
         $paths = [];
@@ -462,7 +489,7 @@ final class SdkProxyController extends AbstractController
                                 'in' => 'query',
                                 'required' => false,
                                 'schema' => ['type' => 'string'],
-                                'description' => 'JSON com metadados (ex.: {"apiKey":"..."}).',
+                                'description' => 'JSON com metadados (ex.: {"api_key":"..."}).',
                             ],
                             [
                                 'name' => 'api_key',
@@ -552,11 +579,12 @@ final class SdkProxyController extends AbstractController
             'openapi' => '3.1.0',
             'info' => [
                 'title' => 'Asaas SDK Playground API',
-                'version' => '1.0.0',
+                'version' => $this->bootstrap->sdkVersion(),
                 'description' => 'API de Playground que expõe os métodos da SDK via proxy.',
             ],
             'servers' => [
-                ['url' => $serverUrl],
+                ['url' => $absoluteServerUrl, 'description' => 'Host atual (absoluto)'],
+                ['url' => $serverUrl, 'description' => 'Host atual (relativo)'],
             ],
             'paths' => $paths,
             'components' => [
@@ -574,9 +602,10 @@ final class SdkProxyController extends AbstractController
                         'properties' => [
                             'meta' => [
                                 'type' => 'object',
-                                'description' => 'Metadados do playground (ex.: apiKey override).',
+                                'description' => 'Metadados do playground (ex.: api_key override).',
                                 'properties' => [
-                                    'apiKey' => ['type' => 'string'],
+                                    'api_key' => ['type' => 'string'],
+                                    'access_token' => ['type' => 'string'],
                                 ],
                                 'additionalProperties' => true,
                             ],

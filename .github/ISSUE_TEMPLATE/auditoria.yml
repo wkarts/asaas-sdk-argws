@@ -1,0 +1,62 @@
+name: "Auditoria (SDK + Playground)"
+description: "Checklist oficial de auditoria para geração, paridade, qualidade e Playground"
+title: "[AUDITORIA] <título curto>"
+labels:
+  - audit
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para executar uma auditoria completa.
+        Checklist de referência: `audit/checklists/SDK_PLAYGROUND_CHECKLIST.md`.
+
+  - type: input
+    id: ref
+    attributes:
+      label: "Ref/Branch/Tag"
+      description: "Commit/branch/tag sendo auditado"
+      placeholder: "main / v0.3.1 / <sha>"
+    validations:
+      required: true
+
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: "Objetivo"
+      description: "O que precisa ser validado nesta auditoria"
+      placeholder: "Ex.: garantir que Swagger lista todos endpoints e que o proxy aceite body direto"
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: "Passos executados"
+      description: "Cole logs/resumo do que rodou"
+      value: |
+        ```bash
+        composer install
+        composer asaas:sdk-build
+        composer test
+        composer lint
+        composer asaas:verify
+        ```
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: resultado
+    attributes:
+      label: "Resultado"
+      options:
+        - label: "Checklist completo"
+          required: true
+        - label: "Sem regressões no Playground"
+        - label: "Sem regressões na SDK (paridade)"
+
+  - type: textarea
+    id: achados
+    attributes:
+      label: "Achados / Correções"
+      description: "Liste problemas encontrados e correções propostas/aplicadas"
+      placeholder: "- [ ] ..."

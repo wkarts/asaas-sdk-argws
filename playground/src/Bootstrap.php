@@ -106,6 +106,30 @@ final class Bootstrap
         return $this->basePath;
     }
 
+    /**
+     * Retorna a versão instalada da SDK (argws/asaas-sdk-php), quando disponível.
+     * Usado para exibição no Playground/Swagger e para diagnóstico.
+     */
+    public function sdkVersion(): string
+    {
+        // Composer 2 expõe InstalledVersions, sem dependências extras.
+        if (class_exists('Composer\\InstalledVersions')) {
+            try {
+                /** @var class-string $c */
+                $c = 'Composer\\InstalledVersions';
+                $pretty = $c::getPrettyVersion('argws/asaas-sdk-php');
+                if (is_string($pretty) && $pretty !== '') {
+                    return $pretty;
+                }
+            } catch (\Throwable) {
+                // fallback abaixo
+            }
+        }
+
+        // Fallback: variável de ambiente (útil em Docker/build) ou "dev".
+        return $this->env('ASAAS_SDK_VERSION', 'dev');
+    }
+
     public function env(string $key, string $default = ''): string
     {
         $value = getenv($key);

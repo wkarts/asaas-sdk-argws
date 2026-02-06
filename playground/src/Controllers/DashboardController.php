@@ -26,6 +26,9 @@ final class DashboardController extends AbstractController
 
         $result = [
             'ok' => false,
+            'sdk_version' => $this->bootstrap->sdkVersion(),
+            'env' => strtolower($this->bootstrap->env('ASAAS_ENV', 'sandbox')),
+            'base_url' => (string) $request->getUri()->getScheme() . '://' . (string) $request->getUri()->getHost(),
             'duration_ms' => 0,
             'error' => null,
             'response' => null,
