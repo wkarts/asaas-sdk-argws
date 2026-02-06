@@ -20,7 +20,7 @@
       // Evita carregar /public/openapi.json estático/desatualizado.
       // Garante que a UI use sempre a especificação dinâmica do Slim.
       Scalar.createApiReference('#app', {
-        url: '/api/sdk/openapi'
+        url: '/openapi.json'
       })
 
       // Atualiza título com versão da SDK (se disponível)
