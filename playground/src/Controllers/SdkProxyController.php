@@ -213,11 +213,46 @@ final class SdkProxyController extends AbstractController
 
     private function buildServerUrl(ServerRequestInterface $request): string
     {
+        // IMPORTANT:
+        // O playground normalmente roda atrás de reverse proxy (Caddy/Nginx/Traefik).
+        // Nesses casos, a URI interna do container pode ser http://host:8080, mas externamente
+        // o usuário acessa https://host (porta 443). Para evitar montar baseUrl errada,
+        // priorizamos X-Forwarded-* (padrão "Laravel-like").
+
         $uri = $request->getUri();
-        $host = $uri->getHost();
-        $scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'http';
-        $port = $uri->getPort();
-        $portPart = $port && !in_array($port, [80, 443], true) ? ':' . $port : '';
+
+        $xfProto = trim((string) $request->getHeaderLine('X-Forwarded-Proto'));
+        if ($xfProto !== '') {
+            $scheme = trim(explode(',', $xfProto)[0]);
+        } else {
+            $scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'http';
+        }
+
+        $xfHost = trim((string) $request->getHeaderLine('X-Forwarded-Host'));
+        if ($xfHost !== '') {
+            $host = trim(explode(',', $xfHost)[0]);
+        } else {
+            $host = (string) $request->getHeaderLine('Host');
+            if ($host === '') {
+                $host = $uri->getHost();
+            }
+        }
+
+        $xfPort = trim((string) $request->getHeaderLine('X-Forwarded-Port'));
+        if ($xfPort !== '') {
+            $port = (int) trim(explode(',', $xfPort)[0]);
+        } else {
+            $port = (int) ($uri->getPort() ?? 0);
+        }
+
+        // Se o Host já vier com porta (ex: dominio:443), não adiciona novamente.
+        $hostHasPort = str_contains($host, ':');
+        $defaultPort = ($scheme === 'https') ? 443 : 80;
+
+        $portPart = '';
+        if (!$hostHasPort && $port > 0 && $port !== $defaultPort) {
+            $portPart = ':' . $port;
+        }
 
         return $scheme . '://' . $host . $portPart;
     }
@@ -249,7 +284,9 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec_(ServerRequestInterface $request, array $services, array $methodsByClass): array
     {
-        $serverUrl = $this->buildServerUrl($request);
+        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
+        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
+        $serverUrl = '/';
 
         $paths = [];
 
@@ -398,7 +435,7 @@ final class SdkProxyController extends AbstractController
                 'description' => 'API do Playground que expõe a SDK via proxy com OpenAPI dinâmico.',
             ],
             'servers' => [
-                ['url' => $serverUrl, 'description' => 'Host atual'],
+                ['url' => $serverUrl, 'description' => 'Mesma origem (recomendado atrás de proxy)'],
             ],
             'paths' => $paths,
         ];
@@ -411,7 +448,9 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methods): array
     {
-        $serverUrl = $this->buildServerUrl($request);
+        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
+        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
+        $serverUrl = '/';
 
         $paths = [];
 
