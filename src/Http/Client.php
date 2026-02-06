@@ -93,6 +93,7 @@ final class Client
         $options = [
             'headers' => $headers + $defaultHeaders,
             'query' => Query::normalize($query),
+            'http_errors' => false,
         ];
 
         if ($payload !== null) {
@@ -102,8 +103,6 @@ final class Client
                 $options['json'] = $payload;
             }
         }
-
-        $options['http_errors'] = false;
 
         try {
             $response = $this->client->request($method, $path, $options);
