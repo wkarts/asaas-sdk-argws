@@ -217,7 +217,7 @@ final class SdkProxyController extends AbstractController
      * @param array<string, array<int, string>> $methodsByClass
      * @return array<string, mixed>
      */
-    private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methodsByClass): array
+    private function buildOpenApiSpec_(ServerRequestInterface $request, array $services, array $methodsByClass): array
     {
         $serverUrl = $this->buildServerUrl($request);
 
