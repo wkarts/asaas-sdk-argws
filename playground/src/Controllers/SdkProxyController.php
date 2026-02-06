@@ -249,7 +249,9 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec_(ServerRequestInterface $request, array $services, array $methodsByClass): array
     {
-        $serverUrl = $this->buildServerUrl($request);
+        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
+        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
+        $serverUrl = '/';
 
         $paths = [];
 
@@ -411,7 +413,9 @@ final class SdkProxyController extends AbstractController
      */
     private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methods): array
     {
-        $serverUrl = $this->buildServerUrl($request);
+        // Para Swagger/Scalar funcionando atrás de reverse proxy, NÃO fixe URL absoluta.
+        // Usamos servidor relativo para que o cliente chame a mesma origem (https://host).
+        $serverUrl = '/';
 
         $paths = [];
 
