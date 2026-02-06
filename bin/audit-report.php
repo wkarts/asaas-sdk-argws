@@ -71,7 +71,7 @@ $md[] = '';
 
 $reportDir = $base . '/audit/reports';
 if (!is_dir($reportDir)) {
-    @mkdir($reportDir, 0777, true);
+    @mkdir($reportDir, 0o777, true);
 }
 
 $filename = $reportDir . '/' . date('Ymd_His') . ($sha ? '_' . substr($sha, 0, 8) : '') . '.md';

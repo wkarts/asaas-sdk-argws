@@ -25,28 +25,28 @@
 </head>
 <body>
 <?php
-    /** @var \Playground\Bootstrap $bootstrap */
-    // As views são renderizadas no contexto do Slim, mas o autoload já está carregado.
-    // Usamos a mesma fonte de versão exibida no Swagger/OpenAPI.
-    $sdkVersion = 'dev';
-    if (isset($this) && $this instanceof \Playground\Bootstrap) {
-        // nunca deve acontecer; apenas defensivo
-        $sdkVersion = $this->sdkVersion();
-    }
-    // $bootstrap existe em alguns views; se não, tentamos pegar de um global simples.
-    if (isset($bootstrap) && $bootstrap instanceof \Playground\Bootstrap) {
-        $sdkVersion = $bootstrap->sdkVersion();
-    } elseif (class_exists('Composer\\InstalledVersions')) {
-        try {
-            /** @var class-string $c */
-            $c = 'Composer\\InstalledVersions';
-            $p = $c::getPrettyVersion('argws/asaas-sdk-php');
-            if (is_string($p) && $p !== '') {
-                $sdkVersion = $p;
-            }
-        } catch (\Throwable) {
+/** @var \Playground\Bootstrap $bootstrap */
+// As views são renderizadas no contexto do Slim, mas o autoload já está carregado.
+// Usamos a mesma fonte de versão exibida no Swagger/OpenAPI.
+$sdkVersion = 'dev';
+if (isset($this) && $this instanceof \Playground\Bootstrap) {
+    // nunca deve acontecer; apenas defensivo
+    $sdkVersion = $this->sdkVersion();
+}
+// $bootstrap existe em alguns views; se não, tentamos pegar de um global simples.
+if (isset($bootstrap) && $bootstrap instanceof \Playground\Bootstrap) {
+    $sdkVersion = $bootstrap->sdkVersion();
+} elseif (class_exists('Composer\\InstalledVersions')) {
+    try {
+        /** @var class-string $c */
+        $c = 'Composer\\InstalledVersions';
+        $p = $c::getPrettyVersion('argws/asaas-sdk-php');
+        if (is_string($p) && $p !== '') {
+            $sdkVersion = $p;
         }
+    } catch (\Throwable) {
     }
+}
 ?>
 <header>
     <strong>Asaas Playground <span class="badge">SDK <?= htmlspecialchars($sdkVersion, ENT_QUOTES, 'UTF-8') ?></span></strong>
