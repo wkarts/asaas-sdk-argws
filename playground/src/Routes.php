@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Playground;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Playground\Controllers\DashboardController;
 use Playground\Controllers\ExplorerController;
 use Playground\Controllers\LogsController;
@@ -37,9 +39,14 @@ final class Routes
         // API (proxy) - compat e swagger-friendly
         $app->map(['GET', 'POST'], '/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']); // legado
         $app->map(['GET', 'POST'], '/api/sdk/{service}/{method}', [$sdkProxy, 'call']);      // preferido
-        $app->options('/api/sdk/call/{service}/{method}', static fn ($request, $response) => $response->withStatus(204));
-        $app->options('/api/sdk/{service}/{method}', static fn ($request, $response) => $response->withStatus(204));
-        // API (proxy) - compat e swagger-friendly
+        $app->options(
+            '/api/sdk/call/{service}/{method}',
+            static fn(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface => $response->withStatus(204)
+        );
+        $app->options(
+            '/api/sdk/{service}/{method}',
+            static fn(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface => $response->withStatus(204)
+        );
         $app->get('/openapi.json', [$sdkProxy, 'openapi']);
         $app->get('/swagger', [$sdkProxy, 'swagger']);
         $app->get('/scalar', [$sdkProxy, 'scalar']);
