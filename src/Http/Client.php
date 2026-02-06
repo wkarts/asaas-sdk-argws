@@ -103,7 +103,7 @@ final class Client
             }
         }
 
-        $options['http_errors'] = $options['http_errors'] ?? false;
+        $options['http_errors'] = false;
 
         try {
             $response = $this->client->request($method, $path, $options);
