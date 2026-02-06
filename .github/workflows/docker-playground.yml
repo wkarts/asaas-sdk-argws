@@ -21,6 +21,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Garante que NUNCA haverá push de imagem se a SDK estiver quebrada.
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Composer install
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests
+        run: composer test
+
+      - name: Run lint
+        run: composer lint
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

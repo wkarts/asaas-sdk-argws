@@ -85,10 +85,17 @@ final class SdkProxyController extends AbstractController
 
     public function openapi(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->fileResponse(
-            $this->bootstrap->basePath() . '/public/openapi.json',
-            'application/json'
-        );
+        $scanner = new ReflectionScanner($this->bootstrap->basePath());
+        $catalog = $scanner->catalog();
+
+        $services = array_values(array_filter(
+            $catalog['services'],
+            fn(string $class): bool => !str_contains($class, '\\Generated\\')
+        ));
+
+        $spec = $this->buildOpenApiSpec($request, $services, $catalog['methods'] ?? []);
+
+        return $this->json($spec);
     }
 
     public function swagger(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -200,5 +207,306 @@ final class SdkProxyController extends AbstractController
         $response->getBody()->write($contents);
 
         return $response->withHeader('Content-Type', $contentType);
+    }
+
+    /**
+     * Gera um OpenAPI "vivo" baseado na SDK instalada no playground.
+     * Assim Swagger UI / Scalar / Postman conseguem enxergar TODOS os recursos.
+     *
+     * @param array<int, string> $services
+     * @param array<string, array<int, string>> $methodsByClass
+     * @return array<string, mixed>
+     */
+    private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methodsByClass): array
+    {
+        $serverUrl = $this->buildServerUrl($request);
+
+        $paths = [];
+
+        // schema padrão de payload (mantém compat com a rota /api/sdk/{service}/{method})
+        $requestSchema = [
+            'type' => 'object',
+            'additionalProperties' => false,
+            'properties' => [
+                'meta' => [
+                    'type' => 'object',
+                    'additionalProperties' => true,
+                    'description' => 'Metadata opcional. Use meta.api_key para sobrescrever a key do header.',
+                    'properties' => [
+                        'api_key' => ['type' => 'string'],
+                    ],
+                ],
+                'args' => [
+                    'type' => 'array',
+                    'minItems' => 0,
+                    'maxItems' => 4,
+                    'description' => 'Assinatura padrão: [pathParams, query, headers, payload]',
+                    'items' => [
+                        'oneOf' => [
+                            ['type' => 'object', 'additionalProperties' => true],
+                            ['type' => 'array'],
+                            ['type' => 'string'],
+                            ['type' => 'number'],
+                            ['type' => 'boolean'],
+                            ['type' => 'null'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $responseSchema = [
+            'type' => 'object',
+            'additionalProperties' => true,
+            'properties' => [
+                'success' => ['type' => 'boolean'],
+                'duration_ms' => ['type' => 'integer'],
+                'response' => ['nullable' => true],
+                'error' => ['type' => ['string', 'null']],
+            ],
+        ];
+
+        foreach ($services as $class) {
+            $short = (new \ReflectionClass($class))->getShortName();
+            $service = lcfirst(str_replace('Service', '', $short));
+            $methods = $methodsByClass[$class] ?? [];
+
+            foreach ($methods as $method) {
+                // rota concreta (Swagger enxerga) + rota dinâmica (Slim resolve)
+                $path = '/api/sdk/' . $service . '/' . $method;
+
+                $paths[$path] = [
+                    'post' => [
+                        'tags' => ['sdk', $service],
+                        'operationId' => $service . '_' . $method,
+                        'summary' => $short . '::' . $method,
+                        'description' => 'Proxy para ' . $class . '::' . $method,
+                        'parameters' => [
+                            [
+                                'name' => 'X-Asaas-Api-Key',
+                                'in' => 'header',
+                                'required' => false,
+                                'schema' => ['type' => 'string'],
+                                'description' => 'API Key do Asaas (alternativamente use meta.api_key).',
+                            ],
+                            [
+                                'name' => 'X-Asaas-Env',
+                                'in' => 'header',
+                                'required' => false,
+                                'schema' => ['type' => 'string', 'enum' => ['production', 'sandbox']],
+                                'description' => 'Ambiente (production|sandbox). Se omitido, usa ASAAS_ENV do container.',
+                            ],
+                        ],
+                        'requestBody' => [
+                            'required' => false,
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => $requestSchema,
+                                    'examples' => [
+                                        'simples' => [
+                                            'summary' => 'Sem params',
+                                            'value' => ['args' => [[], [], [], null]],
+                                        ],
+                                        'comQuery' => [
+                                            'summary' => 'Com query e payload',
+                                            'value' => [
+                                                'args' => [
+                                                    [],
+                                                    ['limit' => 10],
+                                                    [],
+                                                    ['name' => 'Cliente Teste'],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => [
+                                'description' => 'OK',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => $responseSchema,
+                                    ],
+                                ],
+                            ],
+                            '500' => [
+                                'description' => 'Erro',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => $responseSchema,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        // endpoints utilitários
+        $paths['/api/sdk/catalog'] = [
+            'get' => [
+                'tags' => ['sdk'],
+                'operationId' => 'sdk_catalog',
+                'summary' => 'Catálogo (services + methods) detectado por Reflection',
+                'responses' => [
+                    '200' => [
+                        'description' => 'OK',
+                        'content' => ['application/json' => ['schema' => ['type' => 'object']]],
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'openapi' => '3.0.3',
+            'info' => [
+                'title' => 'Asaas SDK Playground API',
+                'version' => '1.0.0',
+                'description' => 'API do Playground que expõe a SDK via proxy com OpenAPI dinâmico.',
+            ],
+            'servers' => [
+                ['url' => $serverUrl, 'description' => 'Host atual'],
+            ],
+            'paths' => $paths,
+        ];
+    }
+
+    /**
+     * @param string[] $services
+     * @param array<string, array<int, array<string, mixed>>> $methods
+     * @return array<string, mixed>
+     */
+    private function buildOpenApiSpec(ServerRequestInterface $request, array $services, array $methods): array
+    {
+        $serverUrl = $this->buildServerUrl($request);
+
+        $paths = [];
+
+        foreach ($services as $serviceClass) {
+            if (!isset($methods[$serviceClass]) || !is_array($methods[$serviceClass])) {
+                continue;
+            }
+
+            $short = (new \ReflectionClass($serviceClass))->getShortName();
+            $serviceSlug = strtolower(preg_replace('/Service$/', '', $short) ?: $short);
+
+            foreach ($methods[$serviceClass] as $m) {
+                $methodName = (string) ($m['name'] ?? '');
+                if ($methodName === '') {
+                    continue;
+                }
+
+                $path = '/api/sdk/' . $serviceSlug . '/' . $methodName;
+                $paths[$path] = [
+                    'post' => [
+                        'summary' => $short . '::' . $methodName,
+                        'operationId' => $serviceSlug . '_' . $methodName,
+                        'tags' => [$serviceSlug],
+                        'parameters' => [
+                            [
+                                'name' => 'X-Asaas-Env',
+                                'in' => 'header',
+                                'required' => false,
+                                'schema' => ['type' => 'string', 'enum' => ['sandbox', 'production']],
+                                'description' => 'Opcional. Sobrescreve o ambiente do Asaas.',
+                            ],
+                        ],
+                        'requestBody' => [
+                            'required' => false,
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        '$ref' => '#/components/schemas/SdkCallRequest',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => [
+                                'description' => 'OK',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => [
+                                            '$ref' => '#/components/schemas/SdkCallResponse',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            '500' => [
+                                'description' => 'Erro',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => [
+                                            '$ref' => '#/components/schemas/SdkCallResponse',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        return [
+            'openapi' => '3.1.0',
+            'info' => [
+                'title' => 'Asaas SDK Playground API',
+                'version' => '1.0.0',
+                'description' => 'API de Playground que expõe os métodos da SDK via proxy.',
+            ],
+            'servers' => [
+                ['url' => $serverUrl],
+            ],
+            'paths' => $paths,
+            'components' => [
+                'schemas' => [
+                    'SdkCallRequest' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'meta' => [
+                                'type' => 'object',
+                                'description' => 'Metadados do playground (ex.: apiKey override).',
+                                'properties' => [
+                                    'apiKey' => ['type' => 'string'],
+                                ],
+                                'additionalProperties' => true,
+                            ],
+                            'args' => [
+                                'type' => 'array',
+                                'description' => 'Argumentos posicionais: [pathParams, query, headers, payload].',
+                                'items' => [
+                                    'anyOf' => [
+                                        ['type' => 'object'],
+                                        ['type' => 'array'],
+                                        ['type' => 'string'],
+                                        ['type' => 'number'],
+                                        ['type' => 'boolean'],
+                                        ['type' => 'null'],
+                                    ],
+                                ],
+                                'minItems' => 0,
+                                'maxItems' => 4,
+                            ],
+                        ],
+                        'additionalProperties' => false,
+                    ],
+                    'SdkCallResponse' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'success' => ['type' => 'boolean'],
+                            'duration_ms' => ['type' => 'integer'],
+                            'response' => ['type' => ['object', 'array', 'string', 'number', 'boolean', 'null']],
+                            'error' => ['type' => ['string', 'null']],
+                        ],
+                        'required' => ['success', 'duration_ms'],
+                        'additionalProperties' => true,
+                    ],
+                ],
+            ],
+        ];
     }
 }

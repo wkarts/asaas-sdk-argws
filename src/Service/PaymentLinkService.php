@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\PaymentLinkService as GeneratedPaymentLinkService;
 
-final class PaymentLinkService extends GeneratedPaymentLinkService
-{
-}
+final class PaymentLinkService extends GeneratedPaymentLinkService {}

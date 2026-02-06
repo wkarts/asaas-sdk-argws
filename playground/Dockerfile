@@ -21,6 +21,10 @@ RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
 WORKDIR /app
 COPY . /app
 
+# falha rápido se a pasta pública não estiver presente (evita container subindo e caindo com "Directory public does not exist")
+RUN test -d /app/playground/public
+
 WORKDIR /app/playground
 
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "public", "public/index.php"]
+# usa caminhos absolutos para não depender do CWD (e evitar "Directory public does not exist")
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/app/playground/public", "/app/playground/public/index.php"]

@@ -6,6 +6,4 @@ namespace Asaas\Sdk\Service;
 
 use Asaas\Sdk\Service\Generated\CreditBureauReportService as GeneratedCreditBureauReportService;
 
-final class CreditBureauReportService extends GeneratedCreditBureauReportService
-{
-}
+final class CreditBureauReportService extends GeneratedCreditBureauReportService {}
