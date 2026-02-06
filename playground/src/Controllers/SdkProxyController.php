@@ -36,6 +36,36 @@ final class SdkProxyController extends AbstractController
         $serviceName = (string) ($args['service'] ?? '');
         $methodName = (string) ($args['method'] ?? '');
         $payload = (array) $request->getParsedBody();
+
+        // Permite chamadas GET (sem body) — útil para Swagger/Scalar/Browser.
+        if (empty($payload) && strtoupper($request->getMethod()) === 'GET') {
+            $qp = $request->getQueryParams();
+
+            // Formato suportado:
+            // - ?args=<json>
+            // - ?api_key=...&asaas_env=sandbox
+            // - ?meta=<json>
+            if (isset($qp['args']) && is_string($qp['args']) && $qp['args'] !== '') {
+                $decoded = json_decode($qp['args'], true);
+                if (is_array($decoded)) {
+                    $payload['args'] = $decoded;
+                }
+            }
+
+            // meta pode vir como JSON (string) ou como query params individuais
+            if (isset($qp['meta']) && is_string($qp['meta']) && $qp['meta'] !== '') {
+                $decodedMeta = json_decode($qp['meta'], true);
+                if (is_array($decodedMeta)) {
+                    $payload['meta'] = $decodedMeta;
+                }
+            }
+
+            foreach (['api_key', 'access_token'] as $k) {
+                if (isset($qp[$k]) && is_string($qp[$k]) && $qp[$k] !== '') {
+                    $payload[$k] = $qp[$k];
+                }
+            }
+        }
         $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
         $apiKey = $this->extractApiKey($request, $meta);
 
@@ -401,10 +431,73 @@ final class SdkProxyController extends AbstractController
 
                 $path = '/api/sdk/' . $serviceSlug . '/' . $methodName;
                 $paths[$path] = [
+                    'get' => [
+                        'summary' => $short . '::' . $methodName . ' (GET)',
+                        'operationId' => $serviceSlug . '_' . $methodName . '_get',
+                        'tags' => [$serviceSlug],
+                        'security' => [
+                            ['AsaasApiKey' => []],
+                        ],
+                        'parameters' => [
+                            [
+                                'name' => 'X-Asaas-Env',
+                                'in' => 'header',
+                                'required' => false,
+                                'schema' => ['type' => 'string', 'enum' => ['sandbox', 'production']],
+                                'description' => 'Opcional. Sobrescreve o ambiente do Asaas.',
+                            ],
+                            [
+                                'name' => 'args',
+                                'in' => 'query',
+                                'required' => false,
+                                'schema' => ['type' => 'string'],
+                                'description' => 'JSON com os argumentos posicionais: [pathParams, query, headers, payload].',
+                            ],
+                            [
+                                'name' => 'meta',
+                                'in' => 'query',
+                                'required' => false,
+                                'schema' => ['type' => 'string'],
+                                'description' => 'JSON com metadados (ex.: {"apiKey":"..."}).',
+                            ],
+                            [
+                                'name' => 'api_key',
+                                'in' => 'query',
+                                'required' => false,
+                                'schema' => ['type' => 'string'],
+                                'description' => 'Alternativa ao header X-Asaas-Api-Key (somente para facilitar testes no browser).',
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => [
+                                'description' => 'OK',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => [
+                                            '$ref' => '#/components/schemas/SdkCallResponse',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            '500' => [
+                                'description' => 'Erro',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => [
+                                            '$ref' => '#/components/schemas/SdkCallResponse',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
                     'post' => [
                         'summary' => $short . '::' . $methodName,
                         'operationId' => $serviceSlug . '_' . $methodName,
                         'tags' => [$serviceSlug],
+                        'security' => [
+                            ['AsaasApiKey' => []],
+                        ],
                         'parameters' => [
                             [
                                 'name' => 'X-Asaas-Env',
@@ -463,6 +556,14 @@ final class SdkProxyController extends AbstractController
             ],
             'paths' => $paths,
             'components' => [
+                'securitySchemes' => [
+                    'AsaasApiKey' => [
+                        'type' => 'apiKey',
+                        'in' => 'header',
+                        'name' => 'X-Asaas-Api-Key',
+                        'description' => 'Informe sua API Key do Asaas. Alternativas aceitas: X-Asaas-Key, Authorization: Bearer <token>, ou body/meta/api_key em query para GET.',
+                    ],
+                ],
                 'schemas' => [
                     'SdkCallRequest' => [
                         'type' => 'object',

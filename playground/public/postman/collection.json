@@ -28,5 +28,17 @@
         "url": "{{base_url}}/api/sdk/call/customer/listCustomers"
       }
     }
+    ,
+    {
+      "name": "Call SDK Method (GET)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Asaas-Api-Key", "value": "{{asaas_api_key}}" },
+          { "key": "X-Asaas-Env", "value": "{{asaas_env}}" }
+        ],
+        "url": "{{base_url}}/api/sdk/customer/listCustomers?args=%5B%7B%7D%2C%7B%22limit%22%3A10%7D%2C%7B%7D%2C%7B%7D%5D"
+      }
+    }
   ]
 }

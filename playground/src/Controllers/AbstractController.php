@@ -46,9 +46,18 @@ abstract class AbstractController
      */
     protected function extractApiKey(ServerRequestInterface $request, ?array &$payload): ?string
     {
-        $headerKey = $request->getHeaderLine('X-Asaas-Api-Key');
-        if ($headerKey !== '') {
-            return $headerKey;
+        // Header padrão do playground
+        foreach (['X-Asaas-Api-Key', 'X-Asaas-Key'] as $headerName) {
+            $headerKey = $request->getHeaderLine($headerName);
+            if ($headerKey !== '') {
+                return $headerKey;
+            }
+        }
+
+        // Authorization: Bearer <token>
+        $auth = $request->getHeaderLine('Authorization');
+        if ($auth !== '' && preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) {
+            return trim((string) ($m[1] ?? '')) ?: null;
         }
 
         if (is_array($payload)) {
