@@ -225,90 +225,28 @@ final class SdkProxyController extends AbstractController
         return [$pathParams, $query, $headers, $payload];
     }
 
-	private function buildServerUrl(ServerRequestInterface $request): string
-	{
-		// Reverse proxy friendly: prioriza Forwarded (RFC 7239) e X-Forwarded-*.
-		$forwarded = trim($request->getHeaderLine('Forwarded'));
-		$xfHost = trim($request->getHeaderLine('X-Forwarded-Host'));
-		$xfProto = trim($request->getHeaderLine('X-Forwarded-Proto'));
-		$xfPort = trim($request->getHeaderLine('X-Forwarded-Port'));
+    private function buildServerUrl(ServerRequestInterface $request): string
+    {
+        // Reverse proxy friendly: prioriza headers X-Forwarded-* quando presentes.
+        $xfHost = trim($request->getHeaderLine('X-Forwarded-Host'));
+        $xfProto = trim($request->getHeaderLine('X-Forwarded-Proto'));
+        $xfPort = trim($request->getHeaderLine('X-Forwarded-Port'));
 
-		$uri = $request->getUri();
+        $uri = $request->getUri();
+        $host = $xfHost !== '' ? explode(',', $xfHost)[0] : $uri->getHost();
+        $scheme = $xfProto !== '' ? explode(',', $xfProto)[0] : ($uri->getScheme() !== '' ? $uri->getScheme() : 'http');
 
-		$host = '';
-		$scheme = '';
-		$port = null;
+        $port = null;
+        if ($xfPort !== '' && ctype_digit(explode(',', $xfPort)[0])) {
+            $port = (int) explode(',', $xfPort)[0];
+        } elseif ($uri->getPort() !== null) {
+            $port = (int) $uri->getPort();
+        }
 
-		// 1) Tenta parsear "Forwarded: proto=https;host=example.com"
-		if ($forwarded !== '') {
-			// pega o primeiro item: Forwarded pode vir com múltiplos separados por vírgula
-			$first = trim(explode(',', $forwarded)[0]);
+        $portPart = $port && !in_array($port, [80, 443], true) ? ':' . $port : '';
 
-			// quebra por ';'
-			$parts = array_map('trim', explode(';', $first));
-			foreach ($parts as $p) {
-				if (stripos($p, 'proto=') === 0) {
-					$scheme = trim(substr($p, 6), "\"'");
-				} elseif (stripos($p, 'host=') === 0) {
-					$host = trim(substr($p, 5), "\"'");
-				}
-			}
-		}
-
-		// 2) X-Forwarded-* (prioridade alta)
-		if ($xfHost !== '') {
-			$host = trim(explode(',', $xfHost)[0]);
-		}
-
-		if ($xfProto !== '') {
-			$scheme = trim(explode(',', $xfProto)[0]);
-		}
-
-		// 3) Fallback final: URI real
-		if ($host === '') {
-			$host = $uri->getHost();
-		}
-
-		if ($scheme === '') {
-			$scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'http';
-		}
-
-		// 4) Porta
-		// - Se X-Forwarded-Port existe, usa.
-		// - Se host já vem com ":porta", extrai.
-		// - Se estamos atrás de proxy (xfHost/xfProto/Forwarded), NÃO usar a porta interna do container.
-		if ($xfPort !== '' && ctype_digit(trim(explode(',', $xfPort)[0]))) {
-			$port = (int) trim(explode(',', $xfPort)[0]);
-		} else {
-			// se host vier "dominio:443", extrai
-			if (strpos($host, ':') !== false) {
-				// cuidado com IPv6: [::1]:443
-				if (preg_match('/^\[(.+)\]:(\d+)$/', $host, $m)) {
-					$host = '[' . $m[1] . ']';
-					$port = (int) $m[2];
-				} else {
-					$hp = explode(':', $host);
-					if (count($hp) === 2 && ctype_digit($hp[1])) {
-						$host = $hp[0];
-						$port = (int) $hp[1];
-					}
-				}
-			}
-
-			$hasProxySignal = ($xfHost !== '' || $xfProto !== '' || $forwarded !== '');
-
-			if ($port === null && !$hasProxySignal && $uri->getPort() !== null) {
-				// somente se NÃO houver proxy sinalizado
-				$port = (int) $uri->getPort();
-			}
-		}
-
-		// defaults
-		$defaultPort = ($scheme === 'https') ? 443 : 80;
-		$portPart = ($port !== null && $port !== $defaultPort) ? ':' . $port : '';
-
-		return $scheme . '://' . $host . $portPart;
-	}
+        return $scheme . '://' . $host . $portPart;
+    }
 
     private function fileResponse(string $path, string $contentType): ResponseInterface
     {
