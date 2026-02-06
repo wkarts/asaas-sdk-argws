@@ -13,6 +13,8 @@ use Playground\Controllers\SdkProxyController;
 use Playground\Controllers\WebhookController;
 use Playground\Utils\FileStore;
 use Slim\App;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 final class Routes
 {
@@ -58,5 +60,24 @@ final class Routes
         $app->post('/raw/run', [$raw, 'run']);
 
         $app->get('/downloads/{name}', [new FileStore($bootstrap->basePath()), 'download']);
+
+
+        $app->map(['GET','POST','OPTIONS'], '/api/sdk/call/{service}/{method}', function (Request $request, Response $response, array $args) use ($controller) {
+            // Preflight CORS (se precisar)
+            if (strtoupper($request->getMethod()) === 'OPTIONS') {
+                return $response->withStatus(204);
+            }
+        
+            return $controller->handleCall($request, $response, $args);
+        });
+        
+        $app->map(['GET','POST','OPTIONS'], '/api/sdk/{service}/{method}', function (Request $request, Response $response, array $args) use ($controller) {
+            if (strtoupper($request->getMethod()) === 'OPTIONS') {
+                return $response->withStatus(204);
+            }
+        
+            return $controller->handleCall($request, $response, $args);
+        });  
+        
     }
 }
