@@ -35,13 +35,16 @@ final class Routes
 
         $app->get('/api/sdk/catalog', [$sdkProxy, 'catalog']);
         // API (proxy) - compat e swagger-friendly
-        $app->post('/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']); // legado
-        $app->get('/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']);  // GET p/ browser/Swagger
-        $app->post('/api/sdk/{service}/{method}', [$sdkProxy, 'call']);      // preferido
-        $app->get('/api/sdk/{service}/{method}', [$sdkProxy, 'call']);       // GET p/ browser/Swagger
-
-        // OpenAPI dinâmico (não depende do arquivo estático em /public)
-        $app->get('/api/sdk/openapi', [$sdkProxy, 'openapi']);
+        $app->map(['GET', 'POST'], '/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']); // legado
+        $app->map(['GET', 'POST'], '/api/sdk/{service}/{method}', [$sdkProxy, 'call']);      // preferido
+        $app->options(
+            '/api/sdk/call/{service}/{method}',
+            static fn(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface => $response->withStatus(204)
+        );
+        $app->options(
+            '/api/sdk/{service}/{method}',
+            static fn(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface => $response->withStatus(204)
+        );
         $app->get('/openapi.json', [$sdkProxy, 'openapi']);
 
         // Metadados
