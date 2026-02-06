@@ -91,14 +91,21 @@ jobs:
 
       - name: Criar tag (se não existir)
         run: |
+          # IMPORTANTE:
+          # Mesmo que a tag já exista (por exemplo, criada manualmente ou por uma execução anterior),
+          # NÃO podemos encerrar o job aqui. O que precisa existir é o GitHub Release.
+          # Se a tag existir e o release não existir, o job deve continuar para criar o release.
           if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
             echo "Tag $NEXT_TAG já existe."
-            exit 0
+            echo "TAG_EXISTS=1" >> "$GITHUB_ENV"
+          else
+            echo "TAG_EXISTS=0" >> "$GITHUB_ENV"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+            git push origin "$NEXT_TAG"
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
-          git push origin "$NEXT_TAG"
 
       - name: Montar release notes (diff/mudanças)
         id: notes
@@ -115,7 +122,8 @@ jobs:
             echo "\`${LAST_TAG}..${NEXT_TAG}\`" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
             echo "## Changes" >> $GITHUB_OUTPUT
-            git log "${LAST_TAG}..HEAD" --pretty=format:"- %s (%h)" >> $GITHUB_OUTPUT
+            # Use o range fechado na tag alvo, para ficar determinístico (HEAD pode variar entre execuções).
+            git log "${LAST_TAG}..${NEXT_TAG}" --pretty=format:"- %s (%h)" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
