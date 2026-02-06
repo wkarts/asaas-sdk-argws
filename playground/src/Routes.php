@@ -35,8 +35,11 @@ final class Routes
 
         $app->get('/api/sdk/catalog', [$sdkProxy, 'catalog']);
         // API (proxy) - compat e swagger-friendly
-        $app->post('/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']); // legado
-        $app->post('/api/sdk/{service}/{method}', [$sdkProxy, 'call']);      // preferido
+        $app->map(['GET', 'POST'], '/api/sdk/call/{service}/{method}', [$sdkProxy, 'call']); // legado
+        $app->map(['GET', 'POST'], '/api/sdk/{service}/{method}', [$sdkProxy, 'call']);      // preferido
+        $app->options('/api/sdk/call/{service}/{method}', static fn ($request, $response) => $response->withStatus(204));
+        $app->options('/api/sdk/{service}/{method}', static fn ($request, $response) => $response->withStatus(204));
+        // API (proxy) - compat e swagger-friendly
         $app->get('/openapi.json', [$sdkProxy, 'openapi']);
         $app->get('/swagger', [$sdkProxy, 'swagger']);
         $app->get('/scalar', [$sdkProxy, 'scalar']);
