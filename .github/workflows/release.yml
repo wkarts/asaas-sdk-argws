@@ -1,30 +1,136 @@
-name: Release
+name: Release SDK (GitHub + Packagist)
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Opcional. Informe uma tag ex: v1.2.3 (se vazio, calcula automaticamente)'
+        required: false
+        default: ''
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
 
 permissions:
   contents: write
 
 jobs:
   release:
+    # Só tenta criar release quando for push na main ou manual.
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     env:
+      # PAT recomendado (evita bloqueio de workflows ao criar tag). Se não existir, cai no GITHUB_TOKEN.
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
       PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
-      PACKAGIST_PACKAGE_URL: ${{ secrets.PACKAGIST_PACKAGE_URL }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Criar Release no GitHub
+      - name: Checkout (com histórico e tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Buscar tags
+        run: git fetch --tags --force
+
+      - name: Definir TAG (manual ou automática)
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          INPUT="${{ github.event.inputs.version }}"
+          if [[ -n "$INPUT" ]]; then
+            if [[ "$INPUT" != v* ]]; then
+              echo "::error::A versão precisa começar com 'v' (ex: v1.2.3)."
+              exit 1
+            fi
+            echo "tag=$INPUT" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || true)
+          if [[ -z "$LAST_TAG" ]]; then
+            RANGE="HEAD"
+          else
+            RANGE="$LAST_TAG..HEAD"
+          fi
+
+          # Sem commits desde a última tag => nada a fazer
+          if [[ -n "$LAST_TAG" ]] && [[ -z "$(git log "$RANGE" --oneline)" ]]; then
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MESSAGES=$(git log "$RANGE" --pretty=format:%B)
+          if echo "$MESSAGES" | grep -q "BREAKING CHANGE" || echo "$MESSAGES" | grep -q "!:"; then
+            BUMP="major"
+          elif echo "$MESSAGES" | grep -q "^feat"; then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+
+          if [[ -z "$LAST_TAG" ]]; then
+            NEXT_TAG="v0.1.0"
+          else
+            VERSION="${LAST_TAG#v}"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            case "$BUMP" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0;;
+              patch) PATCH=$((PATCH + 1));;
+            esac
+            NEXT_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          echo "tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Encerrar (sem mudanças desde a última tag)
+        if: steps.ver.outputs.tag == ''
+        run: |
+          echo "Nenhuma mudança desde a última tag. Não haverá release."
+
+      - name: Criar/garantir TAG
+        if: steps.ver.outputs.tag != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG já existe. Vamos apenas garantir o release/packagist."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Criar/atualizar Release no GitHub
+        if: steps.ver.outputs.tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.ver.outputs.tag }}
           generate_release_notes: true
-      - name: Atualizar Packagist via API (opcional)
-        if: env.PACKAGIST_USERNAME != '' && env.PACKAGIST_TOKEN != '' && env.PACKAGIST_PACKAGE_URL != ''
+
+      - name: Atualizar Packagist (Composer)
+        if: steps.ver.outputs.tag != ''
+        shell: bash
         run: |
+          set -euo pipefail
+
+          if [[ -z "${PACKAGIST_USERNAME:-}" || -z "${PACKAGIST_TOKEN:-}" ]]; then
+            echo "Packagist secrets ausentes. Pulando update do Packagist."
+            exit 0
+          fi
+
+          REPO_URL="https://github.com/${{ github.repository }}"
+
           curl -sS -X POST \
             -H 'Content-Type: application/json' \
             "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}" \
-            -d "{\"repository\":{\"url\":\"${PACKAGIST_PACKAGE_URL}\"}}"
+            -d "{\"repository\":{\"url\":\"${REPO_URL}\"}}"
