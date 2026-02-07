@@ -37,6 +37,54 @@ final class SdkProxyController extends AbstractController
         $methodName = (string) ($args['method'] ?? '');
         $payload = (array) $request->getParsedBody();
 
+        /**
+         * ✅ Normalização extra (para o Playground principal):
+         * - Alguns UIs mandam {"args": {"id": "...", ...}} ao invés de {"args":[...]}
+         * - Ou mandam {"args":"{...json...}"}
+         * Isso quebrava pathParams e gerava "Parâmetro de path ausente: id".
+         */
+
+        // 1) Se args vier como string JSON, tenta decodificar
+        if (isset($payload['args']) && is_string($payload['args']) && $payload['args'] !== '') {
+            $decoded = json_decode($payload['args'], true);
+            if (is_array($decoded)) {
+                $payload['args'] = $decoded;
+            }
+        }
+
+        // 2) Se args vier como objeto/array associativo, trate como "modo simples"
+        //    e converta para assinatura posicional [pathParams, query, headers, payload]
+        if (isset($payload['args']) && is_array($payload['args'])) {
+            $argsArr = (array) $payload['args'];
+
+            // array_list = args posicional. array assoc = args "objeto" vindo do UI.
+            $isList = function_exists('array_is_list') ? array_is_list($argsArr) : ($argsArr === array_values($argsArr));
+
+            if (!$isList) {
+                $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
+
+                $directPayload = $argsArr;
+
+                // unwrap opcional: {"customer": {...}}
+                if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
+                    $directPayload = (array) $directPayload['customer'];
+                }
+
+                $pathParams = [];
+                if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
+                    $pathParams['id'] = (string) $directPayload['id'];
+                    unset($directPayload['id']);
+                }
+
+                $payloadOnly = $directPayload !== [] ? $directPayload : null;
+
+                $payload = [
+                    'meta' => $meta,
+                    'args' => [$pathParams, [], [], $payloadOnly],
+                ];
+            }
+        }
+
         // Shorthand: se o body não seguir o formato {"args": [...]},
         // tratamos o body como "payload" (4º argumento padrão da SDK).
         // Isso permite usar curl enviando diretamente o objeto do recurso.
