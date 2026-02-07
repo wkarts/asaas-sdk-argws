@@ -31,6 +31,7 @@ final class Bootstrap
     public function app(): App
     {
         $app = AppFactory::create();
+        $app->addBodyParsingMiddleware();
         $app->addRoutingMiddleware();
         $app->addErrorMiddleware(true, true, true);
 
