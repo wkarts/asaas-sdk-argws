@@ -45,9 +45,27 @@ final class SdkProxyController extends AbstractController
             $directPayload = $payload;
             unset($directPayload['meta']);
 
+            // ✅ Unwrap opcional (mantém compatibilidade com exemplos simples do Playground)
+            // Ex.: {"customer": {...}} -> {...}
+            // (não altera comportamento se não existir)
+            if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
+                $directPayload = (array) $directPayload['customer'];
+            }
+
+            // ✅ Se vier "id" no JSON simples (ou no wrapper customer),
+            // tratamos como pathParams (1º argumento) e removemos do payload (4º).
+            // Isso corrige update/delete/getById/cancel etc.
+            $pathParams = [];
+            if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
+                $pathParams['id'] = (string) $directPayload['id'];
+                unset($directPayload['id']);
+            }
+
+            $payloadOnly = $directPayload !== [] ? $directPayload : null;
+
             $payload = [
                 'meta' => $meta,
-                'args' => [[], [], [], $directPayload],
+                'args' => [$pathParams, [], [], $payloadOnly],
             ];
         }
 
@@ -80,6 +98,7 @@ final class SdkProxyController extends AbstractController
                 }
             }
         }
+
         $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
         $apiKey = $this->extractApiKey($request, $meta);
 
