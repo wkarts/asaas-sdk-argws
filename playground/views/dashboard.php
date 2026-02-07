@@ -21,9 +21,18 @@ ob_start();
     document.getElementById('healthcheck').addEventListener('click', async () => {
         const result = document.getElementById('healthResult');
         result.textContent = 'Executando...';
-        const response = await fetch('/health', { headers: window.playgroundHeaders() });
-        const data = await response.json();
-        result.textContent = JSON.stringify(data, null, 2);
+        try {
+            const response = await fetch('/health', { headers: window.playgroundHeaders() });
+            const text = await response.text();
+            try {
+                const data = JSON.parse(text || '{}');
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                result.textContent = 'Resposta não-JSON (HTTP ' + response.status + '):\n' + text;
+            }
+        } catch (e) {
+            result.textContent = 'Falha ao chamar /health: ' + (e && e.message ? e.message : String(e));
+        }
     });
 </script>
 <?php

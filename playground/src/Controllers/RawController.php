@@ -21,13 +21,20 @@ final class RawController extends AbstractController
         $data = (array) $request->getParsedBody();
         $method = strtoupper((string) ($data['method'] ?? 'GET'));
         $path = (string) ($data['path'] ?? '/');
+        $queryJson = (string) ($data['query'] ?? '');
         $bodyJson = (string) ($data['body'] ?? '');
+
+        $queryDecoded = Json::decode($queryJson);
+        if ($queryJson !== '' && $queryDecoded['error']) {
+            return $this->json(['error' => $queryDecoded['error']], 422);
+        }
 
         $decoded = Json::decode($bodyJson);
         if ($decoded['error']) {
             return $this->json(['error' => $decoded['error']], 422);
         }
 
+        $query = is_array($queryDecoded['data'] ?? null) ? (array) $queryDecoded['data'] : [];
         $payload = is_array($decoded['data']) ? $decoded['data'] : null;
         $apiKey = $this->extractApiKey($request, $payload);
 
@@ -39,7 +46,7 @@ final class RawController extends AbstractController
 
         try {
             $client = $this->bootstrap->clientForRequest($request, $apiKey);
-            $responseData = $client->request($method, $path, [], [], $payload);
+            $responseData = $client->request($method, $path, $query, [], $payload);
             $success = true;
         } catch (\Throwable $exception) {
             $errorMessage = $exception->getMessage();

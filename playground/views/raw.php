@@ -13,6 +13,8 @@ ob_start();
     </select>
     <label>Path</label>
     <input type="text" id="path" value="/customers">
+    <label>Query (JSON) — opcional (ex: {"limit":10,"offset":0})</label>
+    <textarea id="query" rows="3">{}</textarea>
     <label>Body (JSON)</label>
     <textarea id="body" rows="6">{}</textarea>
     <button id="run">Executar</button>
@@ -25,6 +27,7 @@ ob_start();
         const form = new FormData();
         form.append('method', document.getElementById('method').value);
         form.append('path', document.getElementById('path').value);
+        form.append('query', document.getElementById('query').value);
         form.append('body', document.getElementById('body').value);
         const response = await fetch('/raw/run', { method: 'POST', body: form, headers: window.playgroundHeaders() });
         const data = await response.json();

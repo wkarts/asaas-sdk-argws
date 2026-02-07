@@ -103,7 +103,9 @@ final class ScenariosController extends AbstractController
             'email' => 'playground@example.com',
         ];
 
-        $response = $this->invokeCatalogMethod($target, [$payload], $request, $apiKey);
+        // Assinatura padrão da SDK: (pathParams, query, headers, payload)
+        // Para CREATE, o objeto precisa ir no 4º argumento (payload).
+        $response = $this->invokeCatalogMethod($target, [[], [], [], $payload], $request, $apiKey);
         $id = $response['id'] ?? null;
         if (is_string($id)) {
             $kv->set('last_customer_id', $id);
@@ -127,8 +129,9 @@ final class ScenariosController extends AbstractController
             throw new \RuntimeException('Método de listagem de clientes não encontrado. Use o Explorer.');
         }
 
+        // Para LIST, os filtros são query-string (2º argumento).
         $payload = $payload ?: ['limit' => 10];
-        return $this->invokeCatalogMethod($target, [$payload], $request, $apiKey);
+        return $this->invokeCatalogMethod($target, [[], $payload, [], null], $request, $apiKey);
     }
 
     /**
@@ -159,7 +162,8 @@ final class ScenariosController extends AbstractController
             'dueDate' => date('Y-m-d', strtotime('+3 days')),
         ];
 
-        $response = $this->invokeCatalogMethod($target, [$payload], $request, $apiKey);
+        // CREATE: payload no 4º argumento.
+        $response = $this->invokeCatalogMethod($target, [[], [], [], $payload], $request, $apiKey);
         $id = $response['id'] ?? null;
         if (is_string($id)) {
             $kv->set('last_payment_id', $id);
@@ -183,8 +187,9 @@ final class ScenariosController extends AbstractController
             throw new \RuntimeException('Método de listagem de cobranças não encontrado. Use o Explorer.');
         }
 
+        // LIST: filtros no 2º argumento (query).
         $payload = $payload ?: ['limit' => 10];
-        return $this->invokeCatalogMethod($target, [$payload], $request, $apiKey);
+        return $this->invokeCatalogMethod($target, [[], $payload, [], null], $request, $apiKey);
     }
 
     /**
@@ -208,8 +213,9 @@ final class ScenariosController extends AbstractController
             throw new \RuntimeException('Nenhum payment id encontrado. Crie uma cobrança primeiro.');
         }
 
+        // CANCEL/DELETE costuma usar pathParams (1º argumento).
         $args = $payload ?: ['id' => $paymentId];
-        return $this->invokeCatalogMethod($target, [$args], $request, $apiKey);
+        return $this->invokeCatalogMethod($target, [$args, [], [], null], $request, $apiKey);
     }
 
     /**
