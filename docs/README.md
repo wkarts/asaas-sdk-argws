@@ -17,4 +17,3 @@
 - [12 - Exemplos CodeEngine](12-exemplos-codeengine.md)
 - [13 - Geração OpenAPI e paridade](13-geracao-openapi-e-paridade.md)
 - [14 - Status/Healthcheck/Resiliência](14-status-healthcheck-resiliencia.md)
-- [15 - FAQ/Troubleshooting](15-faq-troubleshooting.md)
