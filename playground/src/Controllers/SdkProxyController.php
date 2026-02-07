@@ -18,7 +18,7 @@ final class SdkProxyController extends AbstractController
         $catalog = $scanner->catalog();
         $services = array_values(array_filter(
             $catalog['services'],
-            fn (string $class): bool => !str_contains($class, '\\Generated\\')
+            fn(string $class): bool => !str_contains($class, '\\Generated\\')
         ));
         $methods = array_intersect_key($catalog['methods'], array_flip($services));
 
@@ -38,11 +38,10 @@ final class SdkProxyController extends AbstractController
         $payload = (array) $request->getParsedBody();
 
         /**
-         * ✅ Normalização compatível com TODAS as UIs:
-         * - Swagger/Scalar: geralmente mandam args como array posicional
-         * - Explorer: frequentemente manda args como objeto nomeado:
-         *   {"args":{"pathParams":{},"query":{},"headers":{},"payload":{...}}}
-         * - Alguns clientes mandam args como string JSON: {"args":"[...]"} ou {"args":"{...}"}
+         * ✅ Normalização extra (para o Playground principal):
+         * - Alguns UIs mandam {"args": {"id": "...", ...}} ao invés de {"args":[...]}
+         * - Ou mandam {"args":"{...json...}"}
+         * Isso quebrava pathParams e gerava "Parâmetro de path ausente: id".
          */
 
         // 1) Se args vier como string JSON, tenta decodificar
@@ -53,54 +52,36 @@ final class SdkProxyController extends AbstractController
             }
         }
 
-        // 2) Se args vier como array associativo (objeto), detectar se é formato nomeado do Explorer
+        // 2) Se args vier como objeto/array associativo, trate como "modo simples"
+        //    e converta para assinatura posicional [pathParams, query, headers, payload]
         if (isset($payload['args']) && is_array($payload['args'])) {
             $argsArr = (array) $payload['args'];
 
-            // array_list = args posicional. array assoc = args "objeto".
-            $isList = function_exists('array_is_list')
-                ? array_is_list($argsArr)
-                : ($argsArr === array_values($argsArr));
+            // array_list = args posicional. array assoc = args "objeto" vindo do UI.
+            $isList = function_exists('array_is_list') ? array_is_list($argsArr) : ($argsArr === array_values($argsArr));
 
             if (!$isList) {
-                $hasNamed = array_key_exists('pathParams', $argsArr)
-                    || array_key_exists('query', $argsArr)
-                    || array_key_exists('headers', $argsArr)
-                    || array_key_exists('payload', $argsArr);
+                $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
 
-                // 2.a) Formato nomeado (Explorer): converte para assinatura posicional
-                if ($hasNamed) {
-                    $pathParams = is_array($argsArr['pathParams'] ?? null) ? (array) $argsArr['pathParams'] : [];
-                    $query = is_array($argsArr['query'] ?? null) ? (array) $argsArr['query'] : [];
-                    $headers = is_array($argsArr['headers'] ?? null) ? (array) $argsArr['headers'] : [];
-                    $pl = is_array($argsArr['payload'] ?? null) ? (array) $argsArr['payload'] : null;
+                $directPayload = $argsArr;
 
-                    $payload['args'] = [$pathParams, $query, $headers, $pl];
-                } else {
-                    // 2.b) Args como objeto, mas sem chaves nomeadas -> tratar como "modo simples"
-                    $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
-
-                    $directPayload = $argsArr;
-
-                    // unwrap opcional: {"customer": {...}}
-                    if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
-                        $directPayload = (array) $directPayload['customer'];
-                    }
-
-                    // split de id para pathParams
-                    $pathParams = [];
-                    if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
-                        $pathParams['id'] = (string) $directPayload['id'];
-                        unset($directPayload['id']);
-                    }
-
-                    $payloadOnly = $directPayload !== [] ? $directPayload : null;
-
-                    $payload = [
-                        'meta' => $meta,
-                        'args' => [$pathParams, [], [], $payloadOnly],
-                    ];
+                // unwrap opcional: {"customer": {...}}
+                if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
+                    $directPayload = (array) $directPayload['customer'];
                 }
+
+                $pathParams = [];
+                if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
+                    $pathParams['id'] = (string) $directPayload['id'];
+                    unset($directPayload['id']);
+                }
+
+                $payloadOnly = $directPayload !== [] ? $directPayload : null;
+
+                $payload = [
+                    'meta' => $meta,
+                    'args' => [$pathParams, [], [], $payloadOnly],
+                ];
             }
         }
 
@@ -220,7 +201,7 @@ final class SdkProxyController extends AbstractController
 
         $services = array_values(array_filter(
             $catalog['services'],
-            fn (string $class): bool => !str_contains($class, '\\Generated\\')
+            fn(string $class): bool => !str_contains($class, '\\Generated\\')
         ));
 
         $spec = $this->buildOpenApiSpec($request, $services, $catalog['methods'] ?? []);
