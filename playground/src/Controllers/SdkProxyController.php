@@ -227,86 +227,34 @@ final class SdkProxyController extends AbstractController
 
     private function buildServerUrl(ServerRequestInterface $request): string
     {
-        // Override explícito: use quando estiver atrás de proxy e quiser "travar" a URL pública.
+        // Override manual para ambientes atrás de proxy onde o host público não é inferível.
         // Ex.: PLAYGROUND_PUBLIC_URL=https://playground-asaas-sdk.argws.com.br
-        $publicUrl = trim((string) getenv('PLAYGROUND_PUBLIC_URL'));
-        if ($publicUrl !== '') {
-            return rtrim($publicUrl, '/');
+        $public = trim((string) getenv('PLAYGROUND_PUBLIC_URL'));
+        if ($public !== '') {
+            return rtrim($public, '/');
         }
 
-        // Reverse proxy friendly: prioriza Forwarded (RFC 7239) e X-Forwarded-*.
-        $forwarded = trim($request->getHeaderLine('Forwarded'));
+        // Reverse proxy friendly: prioriza headers X-Forwarded-* quando presentes.
         $xfHost = trim($request->getHeaderLine('X-Forwarded-Host'));
         $xfProto = trim($request->getHeaderLine('X-Forwarded-Proto'));
         $xfPort = trim($request->getHeaderLine('X-Forwarded-Port'));
 
         $uri = $request->getUri();
+        $host = $xfHost !== '' ? explode(',', $xfHost)[0] : $uri->getHost();
+        $scheme = $xfProto !== '' ? explode(',', $xfProto)[0] : ($uri->getScheme() !== '' ? $uri->getScheme() : 'http');
 
-        $host = '';
-        $scheme = '';
         $port = null;
-
-        // 1) Forwarded: proto=https;host=example.com
-        if ($forwarded !== '') {
-            $first = trim(explode(',', $forwarded)[0]);
-            $parts = array_map('trim', explode(';', $first));
-
-            foreach ($parts as $p) {
-                if (stripos($p, 'proto=') === 0) {
-                    $scheme = trim(substr($p, 6), ""'");
-                } elseif (stripos($p, 'host=') === 0) {
-                    $host = trim(substr($p, 5), ""'");
-                }
-            }
-        }
-
-        // 2) X-Forwarded-*
-        if ($xfHost !== '') {
-            $host = trim(explode(',', $xfHost)[0]);
-        }
-
-        if ($xfProto !== '') {
-            $scheme = trim(explode(',', $xfProto)[0]);
-        }
-
-        // 3) Fallback: URI
-        if ($host === '') {
-            $host = $uri->getHost();
-        }
-
-        if ($scheme === '') {
-            $scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'http';
-        }
-
-        // 4) Porta
-        // - Se X-Forwarded-Port existe, usa.
-        // - Se host já vem com ":porta", extrai.
-        // - Se estamos atrás de proxy (xfHost/xfProto/Forwarded), NÃO usar a porta interna do container.
-        if ($xfPort !== '' && ctype_digit(trim(explode(',', $xfPort)[0]))) {
-            $port = (int) trim(explode(',', $xfPort)[0]);
+        if ($xfPort !== '' && ctype_digit(explode(',', $xfPort)[0])) {
+            $port = (int) explode(',', $xfPort)[0];
         } else {
-            // host pode vir como "dominio:443" ou "[::1]:443"
-            if (strpos($host, ':') !== false) {
-                if (preg_match('/^\[(.+)\]:(\d+)$/', $host, $m)) {
-                    $host = '[' . $m[1] . ']';
-                    $port = (int) $m[2];
-                } else {
-                    $hp = explode(':', $host);
-                    if (count($hp) === 2 && ctype_digit($hp[1])) {
-                        $host = $hp[0];
-                        $port = (int) $hp[1];
-                    }
-                }
-            }
-
-            $hasProxySignal = ($xfHost !== '' || $xfProto !== '' || $forwarded !== '');
-            if ($port === null && !$hasProxySignal && $uri->getPort() !== null) {
+            // Se estamos atrás de proxy (X-Forwarded-Host/Proto), não use a porta interna do container.
+            $hasProxySignal = ($xfHost !== '' || $xfProto !== '');
+            if (!$hasProxySignal && $uri->getPort() !== null) {
                 $port = (int) $uri->getPort();
             }
         }
 
-        $defaultPort = ($scheme === 'https') ? 443 : 80;
-        $portPart = ($port !== null && $port !== $defaultPort) ? ':' . $port : '';
+        $portPart = $port !== null && !in_array($port, [80, 443], true) ? ':' . $port : '';
 
         return $scheme . '://' . $host . $portPart;
     }
@@ -646,6 +594,7 @@ final class SdkProxyController extends AbstractController
                 'description' => 'API de Playground que expõe os métodos da SDK via proxy.',
             ],
             'servers' => [
+                // Primeiro server deve ser relativo para evitar CORS e portas internas atrás de proxy.
                 ['url' => $serverUrl, 'description' => 'Host atual (mesma origem) — recomendado'],
                 ['url' => $absoluteServerUrl, 'description' => 'Host público (absoluto) — opcional'],
             ],
