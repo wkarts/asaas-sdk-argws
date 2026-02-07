@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Playground\Controllers;
 
+use Asaas\Sdk\AsaasSdk;
+use Playground\Utils\ArgumentHydrator;
+use Playground\Utils\FileStore;
+use Playground\Utils\Json;
 use Playground\Utils\ReflectionScanner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -15,239 +19,93 @@ final class ExplorerController extends AbstractController
         $scanner = new ReflectionScanner($this->bootstrap->basePath());
         $catalog = $scanner->catalog();
 
-        // remove serviços gerados (se existirem) e mantém apenas públicos
-        $services = array_values(array_filter(
-            $catalog['services'] ?? [],
-            fn (string $class): bool => !str_contains($class, '\\Generated\\')
-        ));
-
-        // organiza métodos por classe
-        $methods = $catalog['methods'] ?? [];
-
-        return $this->view('explorer', [
-            'services' => $services,
-            'methods' => $methods,
-            'sdk_version' => $this->bootstrap->sdkVersion(),
-            'default_env' => $this->bootstrap->env('ASAAS_ENV', 'sandbox'),
+        return $this->render('explorer', [
+            'catalog' => $catalog,
         ]);
     }
 
-    /**
-     * Executa uma chamada da SDK a partir do Explorer.
-     * Espera campos do form:
-     * - service, method
-     * - json (payload)
-     * - api_key / asaas_env (opcionais)
-     * - files (upload opcional)
-     */
+    public function catalog(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $scanner = new ReflectionScanner($this->bootstrap->basePath());
+
+        return $this->json($scanner->catalog());
+    }
+
     public function run(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $data = (array) $request->getParsedBody();
+        $class = (string) ($data['class'] ?? '');
+        $method = (string) ($data['method'] ?? '');
+        $paramsJson = (string) ($data['params'] ?? '');
+
+        $decoded = Json::decode($paramsJson);
+        if ($decoded['error']) {
+            return $this->json(['error' => $decoded['error']], 422);
+        }
+
+        $paramsData = is_array($decoded['data']) ? $decoded['data'] : null;
+        $apiKey = $this->extractApiKey($request, $paramsData);
+
         $start = microtime(true);
-        $success = false;
+        $status = null;
         $responseData = null;
         $errorMessage = null;
+        $success = false;
 
         try {
-            $body = (array) $request->getParsedBody();
-            $serviceName = (string) ($body['service'] ?? '');
-            $methodName = (string) ($body['method'] ?? '');
-
-            if ($serviceName === '' || $methodName === '') {
-                throw new \InvalidArgumentException('Informe service e method.');
+            if (!class_exists($class)) {
+                throw new \RuntimeException('Classe inválida.');
             }
 
-            $serviceClass = $this->resolveServiceClass($serviceName);
-            if ($serviceClass === null || !class_exists($serviceClass)) {
-                throw new \RuntimeException('Service inválido.');
-            }
+            $sdk = $this->bootstrap->sdkForRequest($request, $apiKey);
+            $instance = $this->resolveService($class, $sdk, $request, $apiKey);
+            $reflection = new \ReflectionMethod($class, $method);
+            $args = $this->buildArguments($reflection, $paramsData, $request);
 
-            $sdk = $this->bootstrap->sdkForRequest($request, $this->extractApiKey($request));
-            $instance = $this->resolveService($serviceClass, $sdk, $request, null);
-
-            if (!method_exists($serviceClass, $methodName)) {
-                throw new \RuntimeException('Método inválido.');
-            }
-
-            $reflection = new \ReflectionMethod($serviceClass, $methodName);
-            if (!$reflection->isPublic() || $reflection->isConstructor() || $reflection->isDestructor()) {
-                throw new \RuntimeException('Método inválido.');
-            }
-
-            $files = $request->getUploadedFiles();
-
-            $arguments = $this->buildArguments($reflection, $body, $files);
-
-            $responseData = $reflection->invokeArgs($instance, $arguments);
+            $responseData = $reflection->invokeArgs($instance, $args);
             $success = true;
-        } catch (\Throwable $e) {
-            $errorMessage = $e->getMessage();
+        } catch (\Throwable $exception) {
+            $errorMessage = $exception->getMessage();
         }
 
         $duration = (int) ((microtime(true) - $start) * 1000);
-
-        return $this->json([
+        $result = [
             'success' => $success,
             'duration_ms' => $duration,
-            'response' => $success ? $responseData : null,
-            'error' => $success ? null : $errorMessage,
-        ], $success ? 200 : 500);
-    }
+            'response' => null,
+            'download' => null,
+            'error' => $errorMessage,
+        ];
 
-    /**
-     * Constrói argumentos para o método da SDK.
-     *
-     * Regras:
-     * - Se o método parece ter assinatura padrão da SDK (pathParams, query, headers, payload)
-     *   e o usuário só mandou um JSON simples, usamos esse JSON como payload (4º arg),
-     *   MAS: se existir "id" no JSON simples, assumimos que é path param (1º arg)
-     *   e removemos do payload.
-     */
-    private function buildArguments(\ReflectionMethod $reflection, array $payload, array $files): array
-    {
-        $json = (string) ($payload['json'] ?? '');
-        $data = $this->decodeJsonOrEmpty($json);
-
-        // No Explorer, o usuário normalmente quer enviar APENAS o payload (ex.: {"name":"..."}).
-        // Antes, isso não batia com os nomes dos parâmetros e o payload era perdido (virava null).
-        // Aqui, quando o método tem a assinatura padrão e o JSON não trouxe explicitamente
-        // pathParams/query/headers/payload, tratamos o JSON como o 4º argumento (payload).
-        if ($this->looksLikeGeneratedSdkSignature($reflection) && !$this->hasAnySdkNamedArg($data)) {
-            $direct = $data;
-
-            // ✅ Unwrap genérico: se vier { "customer": {...} } ou { "payment": {...} }
-            // (apenas quando houver 1 chave e o valor for array)
-            if (count($direct) === 1) {
-                $only = array_values($direct)[0] ?? null;
-                if (is_array($only)) {
-                    $direct = $only;
+        if ($success) {
+            $result['response'] = $responseData;
+            if (is_string($responseData)) {
+                $decodedString = Json::decode($responseData);
+                if ($decodedString['error']) {
+                    $fileStore = new FileStore($this->bootstrap->basePath());
+                    $filename = $fileStore->save($responseData);
+                    $result['download'] = '/downloads/' . $filename;
+                    $result['response'] = 'Arquivo salvo para download.';
+                } else {
+                    $result['response'] = $decodedString['data'];
                 }
             }
-
-            // ✅ Se vier "id" no JSON simples, assumimos que é path param (1º arg),
-            // e o restante vira payload (4º arg). Resolve update/delete/getById/cancel etc.
-            $pathParams = [];
-            if (array_key_exists('id', $direct) && (is_string($direct['id']) || is_int($direct['id']))) {
-                $pathParams['id'] = (string) $direct['id'];
-                unset($direct['id']);
-            }
-
-            $payloadOnly = $direct !== [] ? $direct : null;
-
-            return $this->buildPositionalArguments($reflection, [$pathParams, [], [], $payloadOnly], $files);
         }
 
-        // Caso contrário, tenta casar por nome de parâmetro (modo avançado)
-        $argsByName = [];
-        foreach ($reflection->getParameters() as $p) {
-            $name = $p->getName();
-            if (array_key_exists($name, $data)) {
-                $argsByName[$name] = $data[$name];
-            }
-        }
+        $this->logAction(
+            'EXPLORER:' . $class . '::' . $method,
+            $this->scrubSensitive($paramsData),
+            $duration,
+            $success,
+            $status,
+            $errorMessage,
+            $result['response']
+        );
 
-        // Se conseguiu argumentos nomeados, usa eles.
-        if (!empty($argsByName)) {
-            return $this->buildNamedArguments($reflection, $argsByName, $files);
-        }
-
-        // Último fallback: tenta passar o JSON inteiro como primeiro argumento (caso o método não seja padrão)
-        return $this->buildNamedArguments($reflection, $data, $files);
+        return $this->json($result, $success ? 200 : 500);
     }
 
-    private function decodeJsonOrEmpty(string $json): array
-    {
-        $json = trim($json);
-        if ($json === '') {
-            return [];
-        }
-
-        $decoded = json_decode($json, true);
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    private function hasAnySdkNamedArg(array $data): bool
-    {
-        // Se o usuário explicitou os nomes "pathParams/query/headers/payload" (modo avançado),
-        // não devemos mexer.
-        return array_key_exists('pathParams', $data)
-            || array_key_exists('query', $data)
-            || array_key_exists('headers', $data)
-            || array_key_exists('payload', $data)
-            || array_key_exists('args', $data);
-    }
-
-    private function looksLikeGeneratedSdkSignature(\ReflectionMethod $reflection): bool
-    {
-        $params = $reflection->getParameters();
-        if (count($params) < 1) {
-            return false;
-        }
-
-        // Padrão esperado: (array $pathParams = [], array $query = [], array $headers = [], ?array $payload = null)
-        // Não valida tipo com rigor absoluto para não quebrar compatibilidade.
-        $names = array_map(fn(\ReflectionParameter $p): string => $p->getName(), $params);
-
-        return isset($names[0], $names[1], $names[2]) &&
-            $names[0] === 'pathParams' &&
-            $names[1] === 'query' &&
-            $names[2] === 'headers';
-    }
-
-    private function buildPositionalArguments(\ReflectionMethod $reflection, array $positional, array $files): array
-    {
-        // garante 4 itens
-        $positional = array_values($positional);
-        $positional = array_pad($positional, 4, null);
-
-        // Se o método aceita payload e há arquivo, preserve comportamento existente (se houver).
-        // (mantém idempotência e evita mexer em upload)
-        return [
-            is_array($positional[0]) ? $positional[0] : [],
-            is_array($positional[1]) ? $positional[1] : [],
-            is_array($positional[2]) ? $positional[2] : [],
-            is_array($positional[3]) ? $positional[3] : (is_null($positional[3]) ? null : (array) $positional[3]),
-        ];
-    }
-
-    private function buildNamedArguments(\ReflectionMethod $reflection, array $named, array $files): array
-    {
-        $out = [];
-        foreach ($reflection->getParameters() as $p) {
-            $name = $p->getName();
-
-            if (array_key_exists($name, $named)) {
-                $out[] = $named[$name];
-                continue;
-            }
-
-            if ($p->isDefaultValueAvailable()) {
-                $out[] = $p->getDefaultValue();
-                continue;
-            }
-
-            $out[] = null;
-        }
-
-        return $out;
-    }
-
-    private function resolveServiceClass(string $service): ?string
-    {
-        if (str_starts_with($service, 'Asaas\\Sdk\\Service\\')) {
-            return $service;
-        }
-
-        $normalized = str_replace(['-', '_'], ' ', $service);
-        $normalized = str_replace(' ', '', ucwords($normalized));
-
-        if (!str_ends_with($normalized, 'Service')) {
-            $normalized .= 'Service';
-        }
-
-        return 'Asaas\\Sdk\\Service\\' . $normalized;
-    }
-
-    private function resolveService(string $class, \Asaas\Sdk\AsaasSdk $sdk, ServerRequestInterface $request, ?string $apiKey): object
+    private function resolveService(string $class, AsaasSdk $sdk, ServerRequestInterface $request, ?string $apiKey): object
     {
         $short = (new \ReflectionClass($class))->getShortName();
         $property = lcfirst(str_replace('Service', '', $short));
@@ -262,5 +120,191 @@ final class ExplorerController extends AbstractController
         }
 
         return new $class();
+    }
+
+    private function buildArguments(\ReflectionMethod $reflection, mixed $data, ServerRequestInterface $request): array
+    {
+        $files = $request->getUploadedFiles();
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $isAssoc = array_keys($data) !== range(0, count($data) - 1);
+        if (!$isAssoc) {
+            return $this->buildPositionalArguments($reflection, $data, $files);
+        }
+
+        // Compat: a SDK gerada expõe assinatura padrão:
+        //   method(array $pathParams = [], array $query = [], array $headers = [], ?array $payload = null)
+        // No Explorer, o usuário normalmente quer enviar APENAS o payload (ex.: {"name":"..."}).
+        // Antes, isso não batia com os nomes dos parâmetros e o payload era perdido (virava null).
+        // Aqui, quando o método tem a assinatura padrão e o JSON não trouxe explicitamente
+        // pathParams/query/headers/payload, tratamos o JSON como o 4º argumento (payload).
+        //
+        // ✅ PATCH MÍNIMO:
+        // - se vier "id" no JSON simples, mover para pathParams['id']
+        // - remover "id" do payload
+        // - payload fica o resto ou null (para delete/cancel etc.)
+        // - unwrap opcional de 1 nível quando houver 1 chave e o valor for array (ex.: {"customer":{...}})
+        if ($this->looksLikeGeneratedSdkSignature($reflection) && !$this->hasAnySdkNamedArg($data)) {
+            $direct = $data;
+
+            // unwrap opcional (somente 1 nível e só quando houver 1 chave)
+            // ex.: {"customer": {...}} ou {"payment": {...}}
+            if (count($direct) === 1) {
+                $only = array_values($direct)[0] ?? null;
+                if (is_array($only)) {
+                    $direct = $only;
+                }
+            }
+
+            $pathParams = [];
+
+            if (array_key_exists('id', $direct) && (is_string($direct['id']) || is_int($direct['id']))) {
+                $pathParams['id'] = (string) $direct['id'];
+                unset($direct['id']);
+            }
+
+            $payloadOnly = $direct !== [] ? $direct : null;
+
+            return $this->buildPositionalArguments($reflection, [$pathParams, [], [], $payloadOnly], $files);
+        }
+
+        return $this->buildNamedArguments($reflection, $data, $files);
+    }
+
+    /**
+     * Detecta a assinatura padrão do gerador (pathParams, query, headers, payload).
+     * Mantemos isso super conservador para não quebrar métodos "manuais".
+     */
+    private function looksLikeGeneratedSdkSignature(\ReflectionMethod $reflection): bool
+    {
+        $params = $reflection->getParameters();
+        if (count($params) < 4) {
+            return false;
+        }
+
+        return ($params[0]->getName() === 'pathParams')
+            && ($params[1]->getName() === 'query')
+            && ($params[2]->getName() === 'headers')
+            && ($params[3]->getName() === 'payload');
+    }
+
+    /**
+     * Verifica se o JSON já trouxe explicitamente algum dos nomes da assinatura padrão.
+     * Se trouxe, respeitamos e deixamos o fluxo original (named args).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function hasAnySdkNamedArg(array $data): bool
+    {
+        foreach (['pathParams', 'query', 'headers', 'payload', 'args'] as $k) {
+            if (array_key_exists($k, $data)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $files
+     */
+    private function buildNamedArguments(\ReflectionMethod $reflection, array $data, array $files): array
+    {
+        $args = [];
+        $hydrator = new ArgumentHydrator();
+
+        foreach ($reflection->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            if (array_key_exists($name, $files) && $this->looksLikeFile($name)) {
+                $uploaded = $files[$name];
+                $stream = $uploaded->getStream()->detach();
+                $args[] = $stream ?: $uploaded->getStream();
+                continue;
+            }
+
+            if (!array_key_exists($name, $data)) {
+                $args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
+                continue;
+            }
+
+            $value = $data[$name];
+            $type = $parameter->getType();
+            if ($type instanceof \ReflectionNamedType && !$type->isBuiltin() && is_array($value)) {
+                $args[] = $hydrator->hydrate($type->getName(), $value);
+                continue;
+            }
+
+            $args[] = $value;
+        }
+
+        return $args;
+    }
+
+    /**
+     * @param array<int, mixed> $data
+     * @param array<string, mixed> $files
+     */
+    private function buildPositionalArguments(\ReflectionMethod $reflection, array $data, array $files): array
+    {
+        $args = [];
+        $hydrator = new ArgumentHydrator();
+
+        foreach ($reflection->getParameters() as $index => $parameter) {
+            $name = $parameter->getName();
+            if (array_key_exists($name, $files) && $this->looksLikeFile($name)) {
+                $uploaded = $files[$name];
+                $stream = $uploaded->getStream()->detach();
+                $args[] = $stream ?: $uploaded->getStream();
+                continue;
+            }
+
+            $value = $data[$index] ?? ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
+            $type = $parameter->getType();
+            if ($type instanceof \ReflectionNamedType && !$type->isBuiltin() && is_array($value)) {
+                $args[] = $hydrator->hydrate($type->getName(), $value);
+                continue;
+            }
+
+            $args[] = $value;
+        }
+
+        return $args;
+    }
+
+    private function looksLikeFile(string $name): bool
+    {
+        $name = strtolower($name);
+        return str_contains($name, 'file') || str_contains($name, 'path')
+            || str_contains($name, 'attachment') || str_contains($name, 'upload');
+    }
+
+    private function logAction(
+        string $action,
+        mixed $params,
+        int $duration,
+        bool $success,
+        ?int $httpStatus,
+        ?string $errorMessage,
+        mixed $response
+    ): void {
+        $db = $this->bootstrap->db()->pdo();
+        $stmt = $db->prepare(
+            'INSERT INTO logs (created_at, action, params_json, duration_ms, success, http_status, error_message, response_excerpt) '
+            . 'VALUES (:created_at, :action, :params_json, :duration_ms, :success, :http_status, :error_message, :response_excerpt)'
+        );
+
+        $stmt->execute([
+            'created_at' => date('c'),
+            'action' => $action,
+            'params_json' => json_encode($params),
+            'duration_ms' => $duration,
+            'success' => $success ? 1 : 0,
+            'http_status' => $httpStatus,
+            'error_message' => $errorMessage,
+            'response_excerpt' => substr(json_encode($response) ?: '', 0, 2000),
+        ]);
     }
 }
