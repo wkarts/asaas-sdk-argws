@@ -38,11 +38,59 @@ final class SdkProxyController extends AbstractController
         $payload = (array) $request->getParsedBody();
 
         /**
-         * ✅ Normalização extra (para o Playground principal):
-         * - Alguns UIs mandam {"args": {"id": "...", ...}} ao invés de {"args":[...]}
-         * - Ou mandam {"args":"{...json...}"}
-         * Isso quebrava pathParams e gerava "Parâmetro de path ausente: id".
+         * ✅ Normalização extra (para o Playground principal + Explorer):
+         *
+         * O Explorer pode mandar:
+         *  - {"args":{"0":...,"1":...}}   (lista "disfarçada" em JSON object)
+         *  - {"args":{"pathParams":{...},"payload":{...}}} (formato nomeado)
+         *
+         * Se tratarmos qualquer "args assoc" como "modo simples", o Explorer quebra tudo.
          */
+
+        // helper local: verifica se array tem chaves "0..n-1" (numéricas em string) => lista disfarçada
+        $isNumericKeyList = static function (array $a): bool {
+            $keys = array_keys($a);
+            if ($keys === []) {
+                return true;
+            }
+
+            $nums = [];
+            foreach ($keys as $k) {
+                if (is_int($k)) {
+                    $nums[] = $k;
+                    continue;
+                }
+                if (is_string($k) && $k !== '' && ctype_digit($k)) {
+                    $nums[] = (int) $k;
+                    continue;
+                }
+                return false;
+            }
+
+            sort($nums);
+            $n = count($nums);
+            for ($i = 0; $i < $n; $i++) {
+                if ($nums[$i] !== $i) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        // helper local: converte array com chaves "0..n-1" (string/int) em lista na ordem correta
+        $toNumericList = static function (array $a): array {
+            $tmp = [];
+            foreach ($a as $k => $v) {
+                if (is_int($k)) {
+                    $tmp[$k] = $v;
+                } elseif (is_string($k) && $k !== '' && ctype_digit($k)) {
+                    $tmp[(int) $k] = $v;
+                }
+            }
+            ksort($tmp);
+            return array_values($tmp);
+        };
 
         // 1) Se args vier como string JSON, tenta decodificar
         if (isset($payload['args']) && is_string($payload['args']) && $payload['args'] !== '') {
@@ -52,36 +100,82 @@ final class SdkProxyController extends AbstractController
             }
         }
 
-        // 2) Se args vier como objeto/array associativo, trate como "modo simples"
-        //    e converta para assinatura posicional [pathParams, query, headers, payload]
+        // 2) Se args vier como array, normaliza para o formato correto SEM quebrar Explorer
         if (isset($payload['args']) && is_array($payload['args'])) {
             $argsArr = (array) $payload['args'];
 
-            // array_list = args posicional. array assoc = args "objeto" vindo do UI.
-            $isList = function_exists('array_is_list') ? array_is_list($argsArr) : ($argsArr === array_values($argsArr));
+            // 2.1) Se for lista disfarçada (keys "0","1","2","3"), converte para lista real
+            if ($isNumericKeyList($argsArr)) {
+                $payload['args'] = $toNumericList($argsArr);
+            } else {
+                // 2.2) Se vier formato nomeado (Explorer/UI custom):
+                // {"args":{"pathParams":{...},"query":{...},"headers":{...},"payload":{...}}}
+                // ou {"args":{"path":{...},"body":{...}}}
+                $namedKeys = array_change_key_case(array_keys($argsArr), CASE_LOWER);
+                $hasNamed =
+                    in_array('pathparams', $namedKeys, true) ||
+                    in_array('path', $namedKeys, true) ||
+                    in_array('params', $namedKeys, true) ||
+                    in_array('query', $namedKeys, true) ||
+                    in_array('headers', $namedKeys, true) ||
+                    in_array('payload', $namedKeys, true) ||
+                    in_array('body', $namedKeys, true);
 
-            if (!$isList) {
-                $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
+                if ($hasNamed) {
+                    // pega variações aceitas
+                    $pathParams = [];
+                    $query = [];
+                    $headers = [];
+                    $body = null;
 
-                $directPayload = $argsArr;
+                    if (isset($argsArr['pathParams']) && is_array($argsArr['pathParams'])) {
+                        $pathParams = (array) $argsArr['pathParams'];
+                    } elseif (isset($argsArr['path']) && is_array($argsArr['path'])) {
+                        $pathParams = (array) $argsArr['path'];
+                    } elseif (isset($argsArr['params']) && is_array($argsArr['params'])) {
+                        $pathParams = (array) $argsArr['params'];
+                    }
 
-                // unwrap opcional: {"customer": {...}}
-                if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
-                    $directPayload = (array) $directPayload['customer'];
+                    if (isset($argsArr['query']) && is_array($argsArr['query'])) {
+                        $query = (array) $argsArr['query'];
+                    }
+
+                    if (isset($argsArr['headers']) && is_array($argsArr['headers'])) {
+                        $headers = (array) $argsArr['headers'];
+                    }
+
+                    if (isset($argsArr['payload']) && is_array($argsArr['payload'])) {
+                        $body = (array) $argsArr['payload'];
+                    } elseif (isset($argsArr['body']) && is_array($argsArr['body'])) {
+                        $body = (array) $argsArr['body'];
+                    }
+
+                    $payload['args'] = [$pathParams, $query, $headers, $body];
+                } else {
+                    // 2.3) args assoc NÃO é lista e NÃO é nomeado:
+                    // trata como "modo simples" (ex.: {"args":{"id":"cus_123","name":"X"}})
+                    $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
+
+                    $directPayload = $argsArr;
+
+                    // unwrap opcional: {"customer": {...}}
+                    if (isset($directPayload['customer']) && is_array($directPayload['customer'])) {
+                        $directPayload = (array) $directPayload['customer'];
+                    }
+
+                    $pathParams = [];
+                    if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
+                        $pathParams['id'] = (string) $directPayload['id'];
+                        unset($directPayload['id']);
+                    }
+
+                    $payloadOnly = $directPayload !== [] ? $directPayload : null;
+
+                    $payload = [
+                        'meta' => $meta,
+                        'args' => [$pathParams, [], [], $payloadOnly],
+                    ];
                 }
-
-                $pathParams = [];
-                if (array_key_exists('id', $directPayload) && (is_string($directPayload['id']) || is_int($directPayload['id']))) {
-                    $pathParams['id'] = (string) $directPayload['id'];
-                    unset($directPayload['id']);
-                }
-
-                $payloadOnly = $directPayload !== [] ? $directPayload : null;
-
-                $payload = [
-                    'meta' => $meta,
-                    'args' => [$pathParams, [], [], $payloadOnly],
-                ];
             }
         }
 
