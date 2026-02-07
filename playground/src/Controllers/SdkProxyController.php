@@ -35,75 +35,20 @@ final class SdkProxyController extends AbstractController
     {
         $serviceName = (string) ($args['service'] ?? '');
         $methodName = (string) ($args['method'] ?? '');
+        $payload = (array) $request->getParsedBody();
 
-        /**
-         * Parser robusto:
-         * - getParsedBody() pode vir null/array/objeto dependendo de middleware e Content-Type
-         * - quando vier vazio em POST/PUT/PATCH, tentamos ler e decodificar o JSON bruto do body
-         *   (isso evita o erro “campo X deve ser informado” mesmo quando o cliente enviou).
-         */
-        $parsed = $request->getParsedBody();
-
-        $payload = [];
-        if (is_array($parsed)) {
-            $payload = $parsed;
-        } elseif (is_object($parsed)) {
-            $payload = (array) $parsed;
-        }
-
-        // Fallback: se POST/PUT/PATCH vier vazio, tenta decodificar JSON bruto.
-        $method = strtoupper($request->getMethod());
-        if ($payload === [] && in_array($method, ['POST', 'PUT', 'PATCH'], true)) {
-            $raw = trim((string) $request->getBody());
-            if ($raw !== '' && ($raw[0] === '{' || $raw[0] === '[')) {
-                $decoded = json_decode($raw, true);
-                if (is_array($decoded)) {
-                    $payload = $decoded;
-                }
-            }
-        }
-
-        // ✅ Swagger UI às vezes manda "args" como string JSON: "{...}" ou "[...]"
-        if (isset($payload['args']) && is_string($payload['args']) && trim($payload['args']) !== '') {
-            $decodedArgs = json_decode($payload['args'], true);
-            if (is_array($decodedArgs)) {
-                $payload['args'] = $decodedArgs;
-            }
-        }
-
-        // Shorthand:
-        // - Se NÃO vier {"args":[...]} e o body não estiver vazio:
-        //   - Se vier {"customer": {...}}, usa customer como payload (args[3]).
-        //   - Senão, usa o body inteiro como payload (args[3]).
+        // Shorthand: se o body não seguir o formato {"args": [...]},
+        // tratamos o body como "payload" (4º argumento padrão da SDK).
+        // Isso permite usar curl enviando diretamente o objeto do recurso.
         if (!array_key_exists('args', $payload) && $payload !== []) {
             $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
-
-            $directPayload = null;
-
-            // ✅ Suporte: { "customer": { ... } } -> payload = customer
-            if (isset($payload['customer']) && is_array($payload['customer'])) {
-                $directPayload = (array) $payload['customer'];
-            } else {
-                $directPayload = $payload;
-                unset($directPayload['meta']);
-            }
+            $directPayload = $payload;
+            unset($directPayload['meta']);
 
             $payload = [
                 'meta' => $meta,
                 'args' => [[], [], [], $directPayload],
             ];
-        }
-
-        // Compat: se veio com args e também veio customer, força args[3]=customer
-        if (array_key_exists('args', $payload) && isset($payload['customer']) && is_array($payload['customer'])) {
-            $argsIn = $payload['args'];
-            if (!is_array($argsIn)) {
-                $argsIn = [];
-            }
-            $argsIn = array_values($argsIn);
-            $argsIn = array_pad($argsIn, 4, null);
-            $argsIn[3] = (array) $payload['customer'];
-            $payload['args'] = $argsIn;
         }
 
         // Permite chamadas GET (sem body) — útil para Swagger/Scalar/Browser.
@@ -275,26 +220,7 @@ final class SdkProxyController extends AbstractController
         $pathParams = is_array($args[0]) ? $args[0] : [];
         $query = is_array($args[1]) ? $args[1] : [];
         $headers = is_array($args[2]) ? $args[2] : [];
-
-        // ✅ Swagger UI pode mandar payload como:
-        // - array (ok)
-        // - object (converter)
-        // - string JSON (decodificar)
-        $payload = null;
-
-        if (is_array($args[3])) {
-            $payload = $args[3];
-        } elseif (is_object($args[3])) {
-            $payload = (array) $args[3];
-        } elseif (is_string($args[3])) {
-            $raw = trim($args[3]);
-            if ($raw !== '' && ($raw[0] === '{' || $raw[0] === '[')) {
-                $decoded = json_decode($raw, true);
-                if (is_array($decoded)) {
-                    $payload = $decoded;
-                }
-            }
-        }
+        $payload = is_array($args[3]) ? $args[3] : null;
 
         return [$pathParams, $query, $headers, $payload];
     }
@@ -321,6 +247,7 @@ final class SdkProxyController extends AbstractController
         if ($xfPort !== '' && ctype_digit(explode(',', $xfPort)[0])) {
             $port = (int) explode(',', $xfPort)[0];
         } else {
+            // Se estamos atrás de proxy (X-Forwarded-Host/Proto), não use a porta interna do container.
             $hasProxySignal = ($xfHost !== '' || $xfProto !== '');
             if (!$hasProxySignal && $uri->getPort() !== null) {
                 $port = (int) $uri->getPort();
