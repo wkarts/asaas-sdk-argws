@@ -125,16 +125,60 @@ final class ExplorerController extends AbstractController
     private function buildArguments(\ReflectionMethod $reflection, mixed $data, ServerRequestInterface $request): array
     {
         $files = $request->getUploadedFiles();
-        if (is_array($data)) {
-            $isAssoc = array_keys($data) !== range(0, count($data) - 1);
-            if ($isAssoc) {
-                return $this->buildNamedArguments($reflection, $data, $files);
-            }
+        if (!is_array($data)) {
+            return [];
+        }
 
+        $isAssoc = array_keys($data) !== range(0, count($data) - 1);
+        if (!$isAssoc) {
             return $this->buildPositionalArguments($reflection, $data, $files);
         }
 
-        return [];
+        // Compat: a SDK gerada expõe assinatura padrão:
+        //   method(array $pathParams = [], array $query = [], array $headers = [], ?array $payload = null)
+        // No Explorer, o usuário normalmente quer enviar APENAS o payload (ex.: {"name":"..."}).
+        // Antes, isso não batia com os nomes dos parâmetros e o payload era perdido (virava null).
+        // Aqui, quando o método tem a assinatura padrão e o JSON não trouxe explicitamente
+        // pathParams/query/headers/payload, tratamos o JSON como o 4º argumento (payload).
+        if ($this->looksLikeGeneratedSdkSignature($reflection) && !$this->hasAnySdkNamedArg($data)) {
+            return $this->buildPositionalArguments($reflection, [[], [], [], $data], $files);
+        }
+
+        return $this->buildNamedArguments($reflection, $data, $files);
+    }
+
+    /**
+     * Detecta a assinatura padrão do gerador (pathParams, query, headers, payload).
+     * Mantemos isso super conservador para não quebrar métodos "manuais".
+     */
+    private function looksLikeGeneratedSdkSignature(\ReflectionMethod $reflection): bool
+    {
+        $params = $reflection->getParameters();
+        if (count($params) < 4) {
+            return false;
+        }
+
+        return ($params[0]->getName() === 'pathParams')
+            && ($params[1]->getName() === 'query')
+            && ($params[2]->getName() === 'headers')
+            && ($params[3]->getName() === 'payload');
+    }
+
+    /**
+     * Verifica se o JSON já trouxe explicitamente algum dos nomes da assinatura padrão.
+     * Se trouxe, respeitamos e deixamos o fluxo original (named args).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function hasAnySdkNamedArg(array $data): bool
+    {
+        foreach (['pathParams', 'query', 'headers', 'payload', 'args'] as $k) {
+            if (array_key_exists($k, $data)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
