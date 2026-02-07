@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
+use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 return (new Config())
-    // Disable parallel runner (unstable in CI; can break with exit code 4)
-    ->setParallelConfig(null)
+    ->setParallelConfig(ParallelConfigFactory::detect()) // @TODO 4.0 no need to call this manually
     ->setRiskyAllowed(false)
     ->setRules([
-        '@auto' => true,
+        '@auto' => true
     ])
     // 💡 by default, Fixer looks for `*.php` files excluding `./vendor/` - here, you can groom this config
     ->setFinder(
