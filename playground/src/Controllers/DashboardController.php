@@ -22,7 +22,10 @@ final class DashboardController extends AbstractController
         $scanner = new ReflectionScanner($this->bootstrap->basePath());
         $catalog = $scanner->catalog();
         $start = microtime(true);
-        $apiKey = $this->extractApiKey($request, $payload = null);
+        // IMPORTANTE: extractApiKey() recebe o 2º argumento por referência.
+        // Não podemos passar uma expressão (ex.: "$payload = null") pois isso quebra em runtime.
+        $payload = null;
+        $apiKey = $this->extractApiKey($request, $payload);
 
         $result = [
             'ok' => false,
