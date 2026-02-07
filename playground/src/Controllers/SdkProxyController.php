@@ -37,19 +37,41 @@ final class SdkProxyController extends AbstractController
         $methodName = (string) ($args['method'] ?? '');
         $payload = (array) $request->getParsedBody();
 
-        // Shorthand: se o body não seguir o formato {"args": [...]},
-        // tratamos o body como "payload" (4º argumento padrão da SDK).
-        // Isso permite usar curl enviando diretamente o objeto do recurso.
-        if (!array_key_exists('args', $payload) && $payload !== []) {
-            $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
-            $directPayload = $payload;
-            unset($directPayload['meta']);
+		// Shorthand:
+		// 1) Se vier {"customer": {...}}, usamos customer como payload (4º argumento).
+		// 2) Se não vier {"args":[...]} e o body não estiver vazio, tratamos o body como payload.
+		// Mantém compat com meta e com o formato legado {"args":[...]}.
+		if (!array_key_exists('args', $payload) && $payload !== []) {
+			$meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
 
-            $payload = [
-                'meta' => $meta,
-                'args' => [[], [], [], $directPayload],
-            ];
-        }
+			// Prioridade: {"customer": {...}}
+			$directPayload = null;
+			if (isset($payload['customer']) && is_array($payload['customer'])) {
+				$directPayload = (array) $payload['customer'];
+			} else {
+				// Body direto como payload
+				$directPayload = $payload;
+				unset($directPayload['meta']);
+			}
+
+			$payload = [
+				'meta' => $meta,
+				'args' => [[], [], [], $directPayload],
+			];
+		} elseif (array_key_exists('args', $payload)) {
+			// Se veio com args, ainda assim aceitamos que o usuário envie "customer"
+			// para preencher/forçar o 4º argumento sem quebrar o padrão.
+			if (isset($payload['customer']) && is_array($payload['customer'])) {
+				$argsIn = $payload['args'];
+				if (!is_array($argsIn)) {
+					$argsIn = [];
+				}
+				$argsIn = array_values($argsIn);
+				$argsIn = array_pad($argsIn, 4, null);
+				$argsIn[3] = (array) $payload['customer'];
+				$payload['args'] = $argsIn;
+			}
+		}
 
         // Permite chamadas GET (sem body) — útil para Swagger/Scalar/Browser.
         if (empty($payload) && strtoupper($request->getMethod()) === 'GET') {
