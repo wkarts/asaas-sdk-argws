@@ -57,8 +57,6 @@ Você pode verificar status da API com uma chamada leve (ex.: `listPayments` com
 - [Exemplos CodeEngine](docs/12-exemplos-codeengine.md)
 - [Geração OpenAPI e paridade](docs/13-geracao-openapi-e-paridade.md)
 - [Status/Healthcheck/Resiliência](docs/14-status-healthcheck-resiliencia.md)
-- [FAQ e Troubleshooting](docs/15-faq-troubleshooting.md)
-- [Changelog e versionamento](docs/16-changelog-versionamento.md)
 
 ## Aviso legal
 
