@@ -35,21 +35,61 @@ final class SdkProxyController extends AbstractController
     {
         $serviceName = (string) ($args['service'] ?? '');
         $methodName = (string) ($args['method'] ?? '');
-        $payload = (array) $request->getParsedBody();
+		$parsed = $request->getParsedBody();
+		$payload = [];
 
-        // Shorthand: se o body não seguir o formato {"args": [...]},
-        // tratamos o body como "payload" (4º argumento padrão da SDK).
-        // Isso permite usar curl enviando diretamente o objeto do recurso.
-        if (!array_key_exists('args', $payload) && $payload !== []) {
-            $meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
-            $directPayload = $payload;
-            unset($directPayload['meta']);
+		if (is_array($parsed)) {
+			$payload = $parsed;
+		} elseif (is_object($parsed)) {
+			$payload = (array) $parsed;
+		}
 
-            $payload = [
-                'meta' => $meta,
-                'args' => [[], [], [], $directPayload],
-            ];
-        }
+		// Fallback: se POST/PUT/PATCH vier vazio, tenta decodificar o JSON bruto.
+		if (
+			$payload === []
+			&& in_array(strtoupper($request->getMethod()), ['POST', 'PUT', 'PATCH'], true)
+		) {
+			$raw = trim((string) $request->getBody());
+			if ($raw !== '' && ($raw[0] === '{' || $raw[0] === '[')) {
+				$decoded = json_decode($raw, true);
+				if (is_array($decoded)) {
+					$payload = $decoded;
+				}
+			}
+		}
+
+		// Shorthand:
+		// - Se vier {"customer": {...}}, usa customer como payload (4º argumento).
+		// - Se vier body direto sem "args", usa body como payload.
+		if (!array_key_exists('args', $payload) && $payload !== []) {
+			$meta = is_array($payload['meta'] ?? null) ? (array) $payload['meta'] : null;
+
+			if (isset($payload['customer']) && is_array($payload['customer'])) {
+				$directPayload = (array) $payload['customer'];
+			} else {
+				$directPayload = $payload;
+				unset($directPayload['meta']);
+			}
+
+			$payload = [
+				'meta' => $meta,
+				'args' => [[], [], [], $directPayload],
+			];
+		} elseif (array_key_exists('args', $payload)) {
+			// Se veio "args", ainda permitimos enviar "customer" para forçar o 4º argumento.
+			if (isset($payload['customer']) && is_array($payload['customer'])) {
+				$argsIn = $payload['args'];
+				if (!is_array($argsIn)) {
+					$argsIn = [];
+				}
+
+				$argsIn = array_values($argsIn);
+				$argsIn = array_pad($argsIn, 4, null);
+				$argsIn[3] = (array) $payload['customer'];
+
+				$payload['args'] = $argsIn;
+			}
+		}
 
         // Permite chamadas GET (sem body) — útil para Swagger/Scalar/Browser.
         if (empty($payload) && strtoupper($request->getMethod()) === 'GET') {
