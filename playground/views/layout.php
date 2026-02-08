@@ -367,6 +367,7 @@ if (isset($bootstrap) && $bootstrap instanceof \Playground\Bootstrap) {
                     </div>
                 </div>
 
+                <!--
                 <div class="card">
                     <h3 style="margin-bottom: 8px;">Personalização rápida (somente UI)</h3>
                     <div class="small">Cole base64 (data URI). Nada vai para o servidor: fica no seu navegador.</div>
@@ -388,6 +389,7 @@ if (isset($bootstrap) && $bootstrap instanceof \Playground\Bootstrap) {
                         <button class="btn" id="clearPix" type="button">Limpar</button>
                     </div>
                 </div>
+                -->
 
                 <div class="card">
                     <h3 style="margin-bottom: 8px;">Atalhos</h3>
