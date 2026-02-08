@@ -57,6 +57,9 @@ Você pode verificar status da API com uma chamada leve (ex.: `listPayments` com
 - [Exemplos CodeEngine](docs/12-exemplos-codeengine.md)
 - [Geração OpenAPI e paridade](docs/13-geracao-openapi-e-paridade.md)
 - [Status/Healthcheck/Resiliência](docs/14-status-healthcheck-resiliencia.md)
+- [Perfex CRM (exemplos)](docs/15-exemplos-perfex-crm.md)
+- [Playground (referência)](docs/16-playground-referencia.md)
+- [Referência de endpoints (gerada do código)](docs/99-reference-endpoints.md)
 
 ## Aviso legal
 

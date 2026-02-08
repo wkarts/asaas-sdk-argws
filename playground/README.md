@@ -1,49 +1,43 @@
-# Asaas Playground
+# Asaas Playground (SDK)
 
-Playground completo para explorar 100% da superfície pública da SDK Asaas, com catálogo dinâmico, Explorer universal, cenários rápidos, webhooks e logs.
+Playground para explorar a superfície pública da SDK, com **Explorer universal**, cenários rápidos, webhooks e logs.
+
+> Este README foca no **uso** do Playground para testar a SDK.
+> Para referência detalhada, veja: `docs/16-playground-referencia.md`.
 
 ## Rodar local (Docker)
 
 ```bash
 cd playground
 cp .env.example .env
-
 docker compose up -d --build
 ```
 
 Acesse: http://localhost:8080
 
-## Configurar .env
+## Variáveis principais (.env)
 
-Principais variáveis:
-
-- `ASAAS_API_KEY`: token da API Asaas.
+- `ASAAS_API_KEY`: sua API key do Asaas.
 - `ASAAS_ENV`: `sandbox` ou `production`.
 - `ASAAS_WEBHOOK_TOKEN`: opcional; valida o header `asaas-access-token` nos webhooks.
 
-## Explorer (Execução universal)
+## Explorer (execução universal)
 
-- Selecione a classe e o método.
-- Passe parâmetros em JSON:
-  - Array (`[]`) para argumentos posicionais.
-  - Objeto (`{}`) para casar por nome.
-- Objetos tipados são hidratados automaticamente via Reflection.
-- Se você não quer usar a chave fixa do `.env`, informe a chave no topo da UI. Ela é enviada apenas em memória via header `X-Asaas-Api-Key`.
-- O ambiente pode ser alternado por request via header `X-Asaas-Env` (`sandbox`/`production`).
+- Selecione o service e o método.
+- Passe parâmetros em JSON (por nome ou posicional).
+- Você pode sobrescrever por request:
+  - `X-Asaas-Api-Key`
+  - `X-Asaas-Env` (`sandbox`/`production`)
 
-## Catálogo da SDK
-
-Endpoint JSON:
+## Catálogo
 
 ```
 GET /sdk/catalog
 ```
 
-Ele retorna classes, services e assinaturas de métodos geradas por Reflection.
+Retorna services/métodos disponíveis por Reflection (útil para automação e geração de docs).
 
 ## Webhooks
-
-Endpoint de recepção:
 
 ```
 POST /webhooks/asaas
@@ -53,80 +47,5 @@ Se `ASAAS_WEBHOOK_TOKEN` estiver definido, o header `asaas-access-token` é obri
 
 ## Logs
 
-Todas as chamadas de Explorer, Scenarios e Raw ficam registradas em SQLite. Acesse `/logs` para filtrar por ação/sucesso. Campos sensíveis (`api_key`, `access_token`) são removidos dos logs.
-
-## Deploy VPS (Docker Hub + Nginx)
-
-### Docker Compose (pull)
-
-```bash
-cd playground
-cp .env.example .env
-
-echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-
-docker compose -f docker-compose.vps.yml pull
-
-docker compose -f docker-compose.vps.yml up -d
-```
-
-### Nginx (HTTP)
-
-```nginx
-server {
-  listen 80;
-  server_name playground-asaas-sdk.argws.com.br;
-
-  client_max_body_size 20m;
-
-  location / {
-    proxy_pass http://127.0.0.1:8080;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-}
-```
-
-### TLS com Let's Encrypt
-
-```bash
-certbot --nginx -d playground-asaas-sdk.argws.com.br
-```
-
-## Deploy VPS (Docker Hub + Caddy com TLS automático)
-
-```bash
-cd playground
-cp .env.example .env
-
-echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-
-docker compose -f docker-compose.full.yml pull
-docker compose -f docker-compose.full.yml up -d
-```
-
-Esse modo usa o Caddy para obter/renovar TLS automaticamente no domínio `playground-asaas-sdk.argws.com.br`.
-
-## Docker Hub
-
-A imagem publicada pelo workflow é:
-
-```
-${DOCKERHUB_USERNAME}/asaas-sdk-argws-playground
-```
-
-Tags:
-
-- `latest`
-- `sha-<commit>`
-
-## Codespaces (Try online temporário)
-
-1. Abra um Codespace no repositório.
-2. Instale dependências (`composer install`) dentro de `/playground`.
-3. Exponha a porta `8080` e publique como **Public**.
-
-Isso serve apenas como demo temporária (não é hosting permanente).
+As execuções ficam registradas (campos sensíveis são removidos).
+Use para copiar payloads que funcionaram e depurar erros 400/401.

@@ -17,3 +17,10 @@
 - [12 - Exemplos CodeEngine](12-exemplos-codeengine.md)
 - [13 - Geração OpenAPI e paridade](13-geracao-openapi-e-paridade.md)
 - [14 - Status/Healthcheck/Resiliência](14-status-healthcheck-resiliencia.md)
+
+## Extras
+
+- [15 — Exemplos Perfex CRM](15-exemplos-perfex-crm.md)
+- [16 — Playground (referência)](16-playground-referencia.md)
+- [99 — Referência de endpoints (gerada do código)](99-reference-endpoints.md)
+
