@@ -1,1 +1,11 @@
 * text=auto eol=lf
+
+# Excluir itens desnecessários dos arquivos de release/dist (Packagist/git archive)
+playground/** export-ignore
+tests/** export-ignore
+.devcontainer/** export-ignore
+**/.devcontainer/** export-ignore
+.env.example export-ignore
+**/.env.example export-ignore
+.gitkeep export-ignore
+**/.gitkeep export-ignore
