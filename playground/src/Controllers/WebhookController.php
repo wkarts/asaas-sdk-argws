@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Playground\Controllers;
 
+use Asaas\Sdk\Webhook\WebhookToken;
 use Playground\Utils\Json;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,6 +34,12 @@ final class WebhookController extends AbstractController
             return $this->json(['error' => 'Webhook não encontrado'], 404);
         }
 
+        // Redact records created by older versions without changing stored events.
+        $storedHeaders = Json::decode((string) ($webhook['headers_json'] ?? ''));
+        $webhook['headers_json'] = Json::pretty(WebhookToken::redactHeaders(
+            is_array($storedHeaders['data']) ? $storedHeaders['data'] : []
+        ));
+
         $stmt = $db->query('SELECT * FROM webhooks ORDER BY id DESC LIMIT 50');
         $webhooks = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -56,11 +63,9 @@ final class WebhookController extends AbstractController
 
     public function receive(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $body = (string) $request->getBody();
-        $payload = Json::decode($body);
-
         $expected = $this->bootstrap->env('ASAAS_WEBHOOK_TOKEN', '');
-        $provided = $request->getHeaderLine('asaas-access-token');
+        $tokenHeaders = $request->getHeader('asaas-access-token');
+        $provided = count($tokenHeaders) === 1 ? $tokenHeaders[0] : null;
         $tokenStatus = self::tokenStatus($expected, $provided);
 
         if (!$tokenStatus['authorized']) {
@@ -69,6 +74,9 @@ final class WebhookController extends AbstractController
                 'validated_token' => $tokenStatus['validated'],
             ], $tokenStatus['status']);
         }
+
+        $body = (string) $request->getBody();
+        $payload = Json::decode($body);
 
         $headers = [];
         foreach ($request->getHeaders() as $name => $values) {
@@ -83,7 +91,7 @@ final class WebhookController extends AbstractController
 
         $stmt->execute([
             'received_at' => date('c'),
-            'headers_json' => json_encode($headers),
+            'headers_json' => json_encode(WebhookToken::redactHeaders($headers)),
             'payload_json' => json_encode($payload['data']),
             'validated_token' => $tokenStatus['validated'] ? 1 : 0,
             'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null,
@@ -110,7 +118,7 @@ final class WebhookController extends AbstractController
             ];
         }
 
-        if ($provided === $expected) {
+        if (WebhookToken::matches($expected, $provided)) {
             return [
                 'authorized' => true,
                 'validated' => true,

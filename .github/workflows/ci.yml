@@ -24,7 +24,10 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-      - run: composer install --no-interaction --prefer-dist      
+          extensions: pdo_sqlite
+      - run: composer install --no-interaction --prefer-dist
+      - name: Webhook token and receiver smoke (offline)
+        run: php playground/tests/webhook-smoke.php
       - run: composer asaas:sdk-build
       - run: git diff --exit-code
       - run: composer test
