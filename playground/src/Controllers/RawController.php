@@ -6,6 +6,7 @@ namespace Playground\Controllers;
 
 use Playground\Utils\FileStore;
 use Playground\Utils\Json;
+use Playground\Utils\Mask;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -105,7 +106,7 @@ final class RawController extends AbstractController
             'success' => $success ? 1 : 0,
             'http_status' => null,
             'error_message' => $errorMessage,
-            'response_excerpt' => substr(json_encode($response) ?: '', 0, 2000),
+            'response_excerpt' => substr(json_encode(is_array($response) ? Mask::maskArray($response) : $response) ?: '', 0, 2000),
         ]);
     }
 }

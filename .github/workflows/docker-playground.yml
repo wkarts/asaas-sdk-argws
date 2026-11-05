@@ -27,9 +27,13 @@ jobs:
         with:
           php-version: '8.3'
           tools: composer
+          extensions: pdo_sqlite
 
       - name: Composer install
         run: composer install --no-interaction --prefer-dist
+
+      - name: Webhook token and receiver smoke (offline)
+        run: php playground/tests/webhook-smoke.php
 
       - name: Run tests
         run: composer test

@@ -7,6 +7,7 @@ namespace Playground\Controllers;
 use Asaas\Sdk\AsaasSdk;
 use Playground\Storage\KvStore;
 use Playground\Utils\Json;
+use Playground\Utils\Mask;
 use Playground\Utils\ReflectionScanner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -303,7 +304,7 @@ final class ScenariosController extends AbstractController
             'success' => $success ? 1 : 0,
             'http_status' => null,
             'error_message' => $errorMessage,
-            'response_excerpt' => substr(json_encode($response) ?: '', 0, 2000),
+            'response_excerpt' => substr(json_encode(is_array($response) ? Mask::maskArray($response) : $response) ?: '', 0, 2000),
         ]);
     }
 }

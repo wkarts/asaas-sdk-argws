@@ -16,4 +16,31 @@ final class WebhookTokenTest extends TestCase
         $this->assertFalse($result['authorized']);
         $this->assertSame(401, $result['status']);
     }
+
+    public function testLegacyTokenStillAuthenticatesWhenItMatches(): void
+    {
+        $result = WebhookController::tokenStatus('legacy-short-token', 'legacy-short-token');
+
+        self::assertTrue($result['authorized']);
+        self::assertTrue($result['validated']);
+        self::assertSame(200, $result['status']);
+    }
+
+    public function testMissingTokenIsUnauthorizedWhenConfigured(): void
+    {
+        $result = WebhookController::tokenStatus('configured-token', null);
+
+        self::assertFalse($result['authorized']);
+        self::assertFalse($result['validated']);
+        self::assertSame(401, $result['status']);
+    }
+
+    public function testEmptyConfigurationKeepsExplicitLegacyUnvalidatedStatus(): void
+    {
+        $result = WebhookController::tokenStatus('', null);
+
+        self::assertTrue($result['authorized']);
+        self::assertFalse($result['validated']);
+        self::assertSame(200, $result['status']);
+    }
 }
