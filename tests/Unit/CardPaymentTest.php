@@ -9,12 +9,12 @@ use Asaas\Sdk\Http\Environment;
 use Asaas\Sdk\Http\RetryMiddleware;
 use Asaas\Sdk\Service\PaymentService;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
-use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 final class CardPaymentTest extends TestCase
@@ -38,7 +38,7 @@ final class CardPaymentTest extends TestCase
         foreach (['payWithCard', 'payWithCreditCard'] as $endpoint) {
             foreach ([400, 401, 429, 500, 503, 'timeout'] as $failure) {
                 $history = [];
-                $first = $failure === 'timeout' ? new ConnectException('synthetic timeout', new Request('POST', '/v3/payments/pay_test/'.$endpoint)) : new Response($failure, [], '{}');
+                $first = $failure === 'timeout' ? new ConnectException('synthetic timeout', new Request('POST', '/v3/payments/pay_test/' . $endpoint)) : new Response($failure, [], '{}');
                 $service = $this->service([$first, new Response(200, [], '{"id":"unexpected_retry"}')], $history);
                 try {
                     if ($endpoint === 'payWithCard') {
@@ -48,7 +48,7 @@ final class CardPaymentTest extends TestCase
                     }
                     self::fail('Failure must remain visible to the caller');
                 } catch (\Asaas\Sdk\Exception\ApiException|\Asaas\Sdk\Exception\TransportException $exception) {
-                    self::assertCount(1, $history, $endpoint.' / '.$failure);
+                    self::assertCount(1, $history, $endpoint . ' / ' . $failure);
                 }
             }
         }
@@ -70,6 +70,10 @@ final class CardPaymentTest extends TestCase
         self::assertCount(2, $history);
     }
 
+    /**
+     * @param list<\Psr\Http\Message\ResponseInterface|\Throwable> $responses
+     * @param list<array<string, mixed>> $history
+     */
     private function service(array $responses, array &$history): PaymentService
     {
         $stack = HandlerStack::create(new MockHandler($responses));
