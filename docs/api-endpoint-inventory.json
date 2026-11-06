@@ -1,0 +1,1315 @@
+{
+  "reviewDate": "2026-11-06",
+  "baseline": "170831639665082c3bf50422877942b04a4a5315",
+  "scope": "Local pinned OpenAPI inventory; links inferred from operation IDs unless externalDocs exists. Not a claim that every remote endpoint or schema was revalidated.",
+  "families": {
+    "Customer": [
+      {
+        "method": "GET",
+        "path": "/v3/customers/{id}",
+        "operationId": "retrieve-a-single-customer",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-customer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/customers/{id}",
+        "operationId": "remove-customer",
+        "source": "https://docs.asaas.com/reference/remove-customer"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/customers/{id}",
+        "operationId": "update-existing-customer",
+        "source": "https://docs.asaas.com/reference/update-existing-customer"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/customers",
+        "operationId": "list-customers",
+        "source": "https://docs.asaas.com/reference/list-customers"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/customers",
+        "operationId": "create-new-customer",
+        "source": "https://docs.asaas.com/reference/create-new-customer"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/customers/{id}/restore",
+        "operationId": "restore-removed-customer",
+        "source": "https://docs.asaas.com/reference/restore-removed-customer"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/customers/{id}/notifications",
+        "operationId": "retrieve-notifications-from-a-customer",
+        "source": "https://docs.asaas.com/reference/retrieve-notifications-from-a-customer"
+      }
+    ],
+    "Payment": [
+      {
+        "method": "POST",
+        "path": "/v3/payments",
+        "operationId": "create-new-payment",
+        "source": "https://docs.asaas.com/reference/create-new-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments",
+        "operationId": "list-payments",
+        "source": "https://docs.asaas.com/reference/list-payments"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/",
+        "operationId": "create-new-payment-with-credit-card",
+        "source": "https://docs.asaas.com/reference/create-new-payment-with-credit-card"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/captureAuthorizedPayment",
+        "operationId": "capture-payment-with-pre-authorization",
+        "source": "https://docs.asaas.com/reference/capture-payment-with-pre-authorization"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/payWithCreditCard",
+        "operationId": "pay-a-charge-with-credit-card",
+        "source": "https://docs.asaas.com/reference/pay-a-charge-with-credit-card"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/billingInfo",
+        "operationId": "retrieve-payment-billing-information",
+        "source": "https://docs.asaas.com/reference/retrieve-payment-billing-information"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/viewingInfo",
+        "operationId": "payment-viewing-information",
+        "source": "https://docs.asaas.com/reference/payment-viewing-information"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/payments/{id}",
+        "operationId": "update-existing-payment",
+        "source": "https://docs.asaas.com/reference/update-existing-payment"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/payments/{id}",
+        "operationId": "delete-payment",
+        "source": "https://docs.asaas.com/reference/delete-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}",
+        "operationId": "retrieve-a-single-payment",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/receiveInCash",
+        "operationId": "confirm-cash-receipt",
+        "source": "https://docs.asaas.com/reference/confirm-cash-receipt"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/identificationField",
+        "operationId": "get-digitable-bill-line",
+        "source": "https://docs.asaas.com/reference/get-digitable-bill-line"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/simulate",
+        "operationId": "sales-simulator",
+        "source": "https://docs.asaas.com/reference/sales-simulator"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/restore",
+        "operationId": "restore-removed-payment",
+        "source": "https://docs.asaas.com/reference/restore-removed-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/undoReceivedInCash",
+        "operationId": "undo-cash-receipt-confirmation",
+        "source": "https://docs.asaas.com/reference/undo-cash-receipt-confirmation"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/status",
+        "operationId": "retrieve-status-of-a-payment",
+        "source": "https://docs.asaas.com/reference/retrieve-status-of-a-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/limits",
+        "operationId": "recovering-payment-limits",
+        "source": "https://docs.asaas.com/reference/recovering-payment-limits"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/pixQrCode",
+        "operationId": "get-qr-code-for-pix-payments",
+        "source": "https://docs.asaas.com/reference/get-qr-code-for-pix-payments"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/refund",
+        "operationId": "refund-payment",
+        "source": "https://docs.asaas.com/reference/refund-payment"
+      }
+    ],
+    "Payment with summary data": [
+      {
+        "method": "GET",
+        "path": "/v3/lean/payments",
+        "operationId": "list-payments-with-summary-data",
+        "source": "https://docs.asaas.com/reference/list-payments-with-summary-data"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments",
+        "operationId": "create-new-payment-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/create-new-payment-with-summary-data-in-response"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/",
+        "operationId": "create-new-payment-with-credit-card-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/create-new-payment-with-credit-card-with-summary-data-in-response"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/lean/payments/{id}",
+        "operationId": "retrieve-a-single-payment-with-summary-data",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-payment-with-summary-data"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/lean/payments/{id}",
+        "operationId": "update-existing-payment-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/update-existing-payment-with-summary-data-in-response"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/lean/payments/{id}",
+        "operationId": "delete-payment-with-summary-data",
+        "source": "https://docs.asaas.com/reference/delete-payment-with-summary-data"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/{id}/captureAuthorizedPayment",
+        "operationId": "capture-payment-with-pre-authorization-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/capture-payment-with-pre-authorization-with-summary-data-in-response"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/{id}/undoReceivedInCash",
+        "operationId": "undo-cash-receipt-confirmation-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/undo-cash-receipt-confirmation-with-summary-data-in-response"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/{id}/receiveInCash",
+        "operationId": "confirm-cash-receipt-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/confirm-cash-receipt-with-summary-data-in-response"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/{id}/restore",
+        "operationId": "restore-removed-payment-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/restore-removed-payment-with-summary-data-in-response"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/lean/payments/{id}/refund",
+        "operationId": "refund-payment-with-summary-data-in-response",
+        "source": "https://docs.asaas.com/reference/refund-payment-with-summary-data-in-response"
+      }
+    ],
+    "Payment Document": [
+      {
+        "method": "DELETE",
+        "path": "/v3/payments/{id}/documents/{documentId}",
+        "operationId": "delete-document-from-a-payment",
+        "source": "https://docs.asaas.com/reference/delete-document-from-a-payment"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/payments/{id}/documents/{documentId}",
+        "operationId": "update-settings-of-a-document-of-a-payment",
+        "source": "https://docs.asaas.com/reference/update-settings-of-a-document-of-a-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/documents/{documentId}",
+        "operationId": "retrieve-a-single-document-of-a-payment",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-document-of-a-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/documents",
+        "operationId": "list-documents-of-a-payment",
+        "source": "https://docs.asaas.com/reference/list-documents-of-a-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/documents",
+        "operationId": "upload-payment-documents",
+        "source": "https://docs.asaas.com/reference/upload-payment-documents"
+      }
+    ],
+    "Installment": [
+      {
+        "method": "GET",
+        "path": "/v3/installments",
+        "operationId": "list-installments",
+        "source": "https://docs.asaas.com/reference/list-installments"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/installments",
+        "operationId": "create-installment",
+        "source": "https://docs.asaas.com/reference/create-installment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/installments/{id}",
+        "operationId": "retrieve-a-single-installment",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-installment"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/installments/{id}",
+        "operationId": "remove-installment",
+        "source": "https://docs.asaas.com/reference/remove-installment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/installments/{id}/paymentBook",
+        "operationId": "generate-installment-booklet",
+        "source": "https://docs.asaas.com/reference/generate-installment-booklet"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/installments/{id}/splits",
+        "operationId": "update-installment-splits",
+        "source": "https://docs.asaas.com/reference/update-installment-splits"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/installments/{id}/payments",
+        "operationId": "cancel-charges-of-an-installment",
+        "source": "https://docs.asaas.com/reference/cancel-charges-of-an-installment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/installments/{id}/payments",
+        "operationId": "list-payments-of-a-installment",
+        "source": "https://docs.asaas.com/reference/list-payments-of-a-installment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/installments/{id}/refund",
+        "operationId": "refund-installment",
+        "source": "https://docs.asaas.com/reference/refund-installment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/installments/",
+        "operationId": "create-installment-with-credit-card",
+        "source": "https://docs.asaas.com/reference/create-installment-with-credit-card"
+      }
+    ],
+    "Subscription": [
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions",
+        "operationId": "list-subscriptions",
+        "source": "https://docs.asaas.com/reference/list-subscriptions"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/subscriptions",
+        "operationId": "create-new-subscription",
+        "source": "https://docs.asaas.com/reference/create-new-subscription"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/subscriptions/{id}",
+        "operationId": "update-existing-subscription",
+        "source": "https://docs.asaas.com/reference/update-existing-subscription"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/subscriptions/{id}",
+        "operationId": "remove-subscription",
+        "source": "https://docs.asaas.com/reference/remove-subscription"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions/{id}",
+        "operationId": "retrieve-a-single-subscription",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-subscription"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/subscriptions/{id}/creditCard",
+        "operationId": "update-subscription-credit-card",
+        "source": "https://docs.asaas.com/reference/update-subscription-credit-card"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions/{id}/payments",
+        "operationId": "list-payments-of-a-subscription",
+        "source": "https://docs.asaas.com/reference/list-payments-of-a-subscription"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/subscriptions/",
+        "operationId": "create-subscription-with-credit-card",
+        "source": "https://docs.asaas.com/reference/create-subscription-with-credit-card"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/subscriptions/{id}/invoiceSettings",
+        "operationId": "create-configuration-for-issuance-of-invoices",
+        "source": "https://docs.asaas.com/reference/create-configuration-for-issuance-of-invoices"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions/{id}/invoiceSettings",
+        "operationId": "retrieve-configuration-for-issuance-of-invoices",
+        "source": "https://docs.asaas.com/reference/retrieve-configuration-for-issuance-of-invoices"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/subscriptions/{id}/invoiceSettings",
+        "operationId": "update-configuration-for-issuance-of-invoices",
+        "source": "https://docs.asaas.com/reference/update-configuration-for-issuance-of-invoices"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/subscriptions/{id}/invoiceSettings",
+        "operationId": "remove-configuration-for-issuance-of-invoices",
+        "source": "https://docs.asaas.com/reference/remove-configuration-for-issuance-of-invoices"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions/{id}/paymentBook",
+        "operationId": "generate-subscription-booklet",
+        "source": "https://docs.asaas.com/reference/generate-subscription-booklet"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/subscriptions/{id}/invoices",
+        "operationId": "list-invoices-for-subscription-charges",
+        "source": "https://docs.asaas.com/reference/list-invoices-for-subscription-charges"
+      }
+    ],
+    "Payment Link": [
+      {
+        "method": "POST",
+        "path": "/v3/paymentLinks",
+        "operationId": "create-a-payments-link",
+        "source": "https://docs.asaas.com/reference/create-a-payments-link"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentLinks",
+        "operationId": "list-payments-links",
+        "source": "https://docs.asaas.com/reference/list-payments-links"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/paymentLinks/{id}",
+        "operationId": "remove-a-payments-link",
+        "source": "https://docs.asaas.com/reference/remove-a-payments-link"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/paymentLinks/{id}",
+        "operationId": "update-a-payments-link",
+        "source": "https://docs.asaas.com/reference/update-a-payments-link"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentLinks/{id}",
+        "operationId": "retrieve-a-single-payments-link",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-payments-link"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/paymentLinks/{id}/restore",
+        "operationId": "restore-a-payments-link",
+        "source": "https://docs.asaas.com/reference/restore-a-payments-link"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/paymentLinks/{id}/images",
+        "operationId": "add-an-image-to-a-payments-link",
+        "source": "https://docs.asaas.com/reference/add-an-image-to-a-payments-link"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentLinks/{id}/images",
+        "operationId": "list-images-from-a-payments-link",
+        "source": "https://docs.asaas.com/reference/list-images-from-a-payments-link"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/paymentLinks/{paymentLinkId}/images/{imageId}",
+        "operationId": "remove-an-image-from-payments-link",
+        "source": "https://docs.asaas.com/reference/remove-an-image-from-payments-link"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentLinks/{paymentLinkId}/images/{imageId}",
+        "operationId": "retrieve-a-single-payments-link-image",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-payments-link-image"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/paymentLinks/{paymentLinkId}/images/{imageId}/setAsMain",
+        "operationId": "set-payments-link-main-image",
+        "source": "https://docs.asaas.com/reference/set-payments-link-main-image"
+      }
+    ],
+    "Checkout": [
+      {
+        "method": "POST",
+        "path": "/v3/checkouts",
+        "operationId": "create-new-checkout",
+        "source": "https://docs.asaas.com/reference/create-new-checkout"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/checkouts/{id}/cancel",
+        "operationId": "cancel-a-checkout",
+        "source": "https://docs.asaas.com/reference/cancel-a-checkout"
+      }
+    ],
+    "Anticipation": [
+      {
+        "method": "POST",
+        "path": "/v3/anticipations",
+        "operationId": "request-anticipation",
+        "source": "https://docs.asaas.com/reference/request-anticipation"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/anticipations",
+        "operationId": "list-anticipations",
+        "source": "https://docs.asaas.com/reference/list-anticipations"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/anticipations/configurations",
+        "operationId": "update-status-of-automatic-anticipation",
+        "source": "https://docs.asaas.com/reference/update-status-of-automatic-anticipation"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/anticipations/configurations",
+        "operationId": "retrieve-status-of-automatic-anticipation",
+        "source": "https://docs.asaas.com/reference/retrieve-status-of-automatic-anticipation"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/anticipations/{id}/cancel",
+        "operationId": "cancel-anticipation",
+        "source": "https://docs.asaas.com/reference/cancel-anticipation"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/anticipations/{id}",
+        "operationId": "retrieve-a-single-anticipation",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-anticipation"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/anticipations/limits",
+        "operationId": "retrieve-anticipation-limits",
+        "source": "https://docs.asaas.com/reference/retrieve-anticipation-limits"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/anticipations/simulate",
+        "operationId": "simulate-anticipation",
+        "source": "https://docs.asaas.com/reference/simulate-anticipation"
+      }
+    ],
+    "Credit Card": [
+      {
+        "method": "POST",
+        "path": "/v3/creditCard/tokenizeCreditCard",
+        "operationId": "credit-card-tokenization",
+        "source": "https://docs.asaas.com/reference/credit-card-tokenization"
+      }
+    ],
+    "Payment Refund": [
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/refunds",
+        "operationId": "retrieve-refunds-of-a-single-payment",
+        "source": "https://docs.asaas.com/reference/retrieve-refunds-of-a-single-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/payments/{id}/bankSlip/refund",
+        "operationId": "refund-bank-slip",
+        "source": "https://docs.asaas.com/reference/refund-bank-slip"
+      }
+    ],
+    "Payment Split": [
+      {
+        "method": "GET",
+        "path": "/v3/payments/splits/paid",
+        "operationId": "list-paid-splits",
+        "source": "https://docs.asaas.com/reference/list-paid-splits"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/splits/received/{id}",
+        "operationId": "retrieve-a-single-received-split",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-received-split"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/splits/received",
+        "operationId": "list-received-splits",
+        "source": "https://docs.asaas.com/reference/list-received-splits"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/splits/paid/{id}",
+        "operationId": "retrieve-a-single-paid-split",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-paid-split"
+      }
+    ],
+    "Chargeback": [
+      {
+        "method": "POST",
+        "path": "/v3/chargebacks/{id}/dispute",
+        "operationId": "create-a-chargeback-dispute",
+        "source": "https://docs.asaas.com/reference/create-a-chargeback-dispute"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/chargebacks/",
+        "operationId": "list-chargebacks",
+        "source": "https://docs.asaas.com/reference/list-chargebacks"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/chargeback",
+        "operationId": "retrieve-a-single-chargeback",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-chargeback"
+      }
+    ],
+    "Escrow Account": [
+      {
+        "method": "POST",
+        "path": "/v3/accounts/escrow",
+        "operationId": "create-default-escrow-account-configuration-to-all-subaccounts",
+        "source": "https://docs.asaas.com/reference/create-default-escrow-account-configuration-to-all-subaccounts"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/accounts/escrow",
+        "operationId": "retrieve-default-escrow-account-configuration",
+        "source": "https://docs.asaas.com/reference/retrieve-default-escrow-account-configuration"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/escrow/{id}/finish",
+        "operationId": "finish-payment-escrow-in-the-escrow-account",
+        "source": "https://docs.asaas.com/reference/finish-payment-escrow-in-the-escrow-account"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/accounts/{id}/escrow",
+        "operationId": "save-or-update-escrow-account-configuration-for-subaccount",
+        "source": "https://docs.asaas.com/reference/save-or-update-escrow-account-configuration-for-subaccount"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/accounts/{id}/escrow",
+        "operationId": "reterive-escrow-account-configuration-for-subaccount",
+        "source": "https://docs.asaas.com/reference/reterive-escrow-account-configuration-for-subaccount"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/payments/{id}/escrow",
+        "operationId": "retrieve-payment-escrow-in-the-escrow-account",
+        "source": "https://docs.asaas.com/reference/retrieve-payment-escrow-in-the-escrow-account"
+      }
+    ],
+    "Notification": [
+      {
+        "method": "PUT",
+        "path": "/v3/notifications/{id}",
+        "operationId": "update-existing-notification",
+        "source": "https://docs.asaas.com/reference/update-existing-notification"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/notifications/batch",
+        "operationId": "update-existing-notifications-in-batch",
+        "source": "https://docs.asaas.com/reference/update-existing-notifications-in-batch"
+      }
+    ],
+    "Payment Dunning": [
+      {
+        "method": "POST",
+        "path": "/v3/paymentDunnings",
+        "operationId": "create-a-payment-dunning",
+        "source": "https://docs.asaas.com/reference/create-a-payment-dunning"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentDunnings",
+        "operationId": "list-payment-dunnings",
+        "source": "https://docs.asaas.com/reference/list-payment-dunnings"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentDunnings/{id}",
+        "operationId": "recover-a-single-payment-dunning",
+        "source": "https://docs.asaas.com/reference/recover-a-single-payment-dunning"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/paymentDunnings/simulate",
+        "operationId": "simulate-a-payment-dunning",
+        "source": "https://docs.asaas.com/reference/simulate-a-payment-dunning"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentDunnings/{id}/history",
+        "operationId": "event-history-lists",
+        "source": "https://docs.asaas.com/reference/event-history-lists"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentDunnings/{id}/partialPayments",
+        "operationId": "list-payments-received",
+        "source": "https://docs.asaas.com/reference/list-payments-received"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/paymentDunnings/{id}/documents",
+        "operationId": "resend-documents",
+        "source": "https://docs.asaas.com/reference/resend-documents"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/paymentDunnings/paymentsAvailableForDunning",
+        "operationId": "list-payments-available-for-payment-dunning",
+        "source": "https://docs.asaas.com/reference/list-payments-available-for-payment-dunning"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/paymentDunnings/{id}/cancel",
+        "operationId": "cancel-payment-dunning",
+        "source": "https://docs.asaas.com/reference/cancel-payment-dunning"
+      }
+    ],
+    "Credit Bureau Report": [
+      {
+        "method": "GET",
+        "path": "/v3/creditBureauReport/{id}",
+        "operationId": "retrieve-a-credit-bureau-report",
+        "source": "https://docs.asaas.com/reference/retrieve-a-credit-bureau-report"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/creditBureauReport",
+        "operationId": "list-credit-bureau-reports",
+        "source": "https://docs.asaas.com/reference/list-credit-bureau-reports"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/creditBureauReport",
+        "operationId": "make-consultation",
+        "source": "https://docs.asaas.com/reference/make-consultation"
+      }
+    ],
+    "Invoice": [
+      {
+        "method": "POST",
+        "path": "/v3/invoices",
+        "operationId": "schedule-invoice",
+        "source": "https://docs.asaas.com/reference/schedule-invoice"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/invoices",
+        "operationId": "list-invoices",
+        "source": "https://docs.asaas.com/reference/list-invoices"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/invoices/{id}/cancel",
+        "operationId": "cancel-an-invoice",
+        "source": "https://docs.asaas.com/reference/cancel-an-invoice"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/invoices/{id}",
+        "operationId": "update-invoice",
+        "source": "https://docs.asaas.com/reference/update-invoice"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/invoices/{id}",
+        "operationId": "retrieve-a-single-invoice",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-invoice"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/invoices/{id}/authorize",
+        "operationId": "issue-an-invoice",
+        "source": "https://docs.asaas.com/reference/issue-an-invoice"
+      }
+    ],
+    "Fiscal Info": [
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/municipalOptions",
+        "operationId": "list-municipal-configurations",
+        "source": "https://docs.asaas.com/reference/list-municipal-configurations"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/fiscalInfo/",
+        "operationId": "create-and-update-tax-information",
+        "source": "https://docs.asaas.com/reference/create-and-update-tax-information"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/",
+        "operationId": "retrieve-tax-information",
+        "source": "https://docs.asaas.com/reference/retrieve-tax-information"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/services",
+        "operationId": "list-municipal-services",
+        "source": "https://docs.asaas.com/reference/list-municipal-services"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/fiscalInfo/nationalPortal",
+        "operationId": "configure-invoice-issuing-portal",
+        "source": "https://docs.asaas.com/reference/configure-invoice-issuing-portal"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/federalServiceCodes",
+        "operationId": "list-federal-service-codes",
+        "source": "https://docs.asaas.com/reference/list-federal-service-codes"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/nbsCodes",
+        "operationId": "list-nbs-codes",
+        "source": "https://docs.asaas.com/reference/list-nbs-codes"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/operationIndicatorCodes",
+        "operationId": "list-operation-indicator-codes",
+        "source": "https://docs.asaas.com/reference/list-operation-indicator-codes"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/taxSituationCodes",
+        "operationId": "list-tax-situation-codes",
+        "source": "https://docs.asaas.com/reference/list-tax-situation-codes"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/fiscalInfo/taxClassificationCodes",
+        "operationId": "list-tax-classification-codes",
+        "source": "https://docs.asaas.com/reference/list-tax-classification-codes"
+      }
+    ],
+    "Pix": [
+      {
+        "method": "POST",
+        "path": "/v3/pix/addressKeys",
+        "operationId": "create-a-key",
+        "source": "https://docs.asaas.com/reference/create-a-key"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/addressKeys",
+        "operationId": "list-keys",
+        "source": "https://docs.asaas.com/reference/list-keys"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/addressKeys/{id}",
+        "operationId": "retrieve-a-single-key",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-key"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/pix/addressKeys/{id}",
+        "operationId": "remove-key",
+        "source": "https://docs.asaas.com/reference/remove-key"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/pix/qrCodes/static/{id}",
+        "operationId": "delete-static-qrcode",
+        "source": "https://docs.asaas.com/reference/delete-static-qrcode"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/qrCodes/static",
+        "operationId": "create-static-qrcode",
+        "source": "https://docs.asaas.com/reference/create-static-qrcode"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/tokenBucket/addressKey",
+        "operationId": "available-token-bucket-check",
+        "source": "https://docs.asaas.com/reference/available-token-bucket-check"
+      }
+    ],
+    "Pix Transaction": [
+      {
+        "method": "POST",
+        "path": "/v3/pix/qrCodes/pay",
+        "operationId": "pay-a-qrcode",
+        "source": "https://docs.asaas.com/reference/pay-a-qrcode"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/transactions/{id}",
+        "operationId": "retrieve-a-single-transaction",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-transaction"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/qrCodes/decode",
+        "operationId": "decode-a-qrcode-for-payment",
+        "source": "https://docs.asaas.com/reference/decode-a-qrcode-for-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/transactions",
+        "operationId": "list-transactions",
+        "source": "https://docs.asaas.com/reference/list-transactions"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/transactions/{id}/cancel",
+        "operationId": "cancel-a-scheduled-transaction",
+        "source": "https://docs.asaas.com/reference/cancel-a-scheduled-transaction"
+      }
+    ],
+    "Recurring Pix": [
+      {
+        "method": "GET",
+        "path": "/v3/pix/transactions/recurrings",
+        "operationId": "list-recurrences",
+        "source": "https://docs.asaas.com/reference/list-recurrences"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/transactions/recurrings/{id}/cancel",
+        "operationId": "cancel-a-recurrence",
+        "source": "https://docs.asaas.com/reference/cancel-a-recurrence"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/transactions/recurrings/{id}/items",
+        "operationId": "list-recurrence-items",
+        "source": "https://docs.asaas.com/reference/list-recurrence-items"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/transactions/recurrings/{id}",
+        "operationId": "retrieve-a-single-recurrence",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-recurrence"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/transactions/recurrings/items/{id}/cancel",
+        "operationId": "cancel-a-recurrence-item",
+        "source": "https://docs.asaas.com/reference/cancel-a-recurrence-item"
+      }
+    ],
+    "Automatic Pix": [
+      {
+        "method": "POST",
+        "path": "/v3/pix/automatic/authorizations",
+        "operationId": "create-an-automatic-pix-authorization",
+        "source": "https://docs.asaas.com/reference/create-an-automatic-pix-authorization"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/automatic/authorizations",
+        "operationId": "list-automatic-pix-authorizations",
+        "source": "https://docs.asaas.com/reference/list-automatic-pix-authorizations"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/automatic/authorizations/{id}",
+        "operationId": "retrieve-a-single-automatic-pix-authorization",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-automatic-pix-authorization"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/pix/automatic/authorizations/{id}",
+        "operationId": "cancel-an-automatic-pix-authorization",
+        "source": "https://docs.asaas.com/reference/cancel-an-automatic-pix-authorization"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/automatic/paymentInstructions/{id}",
+        "operationId": "retrieve-a-single-automatic-pix-payment-instruction",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-automatic-pix-payment-instruction"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/pix/automatic/paymentInstructions",
+        "operationId": "list-automatic-pix-payment-instructions",
+        "source": "https://docs.asaas.com/reference/list-automatic-pix-payment-instructions"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/pix/automatic/paymentInstructions/{id}/retries",
+        "operationId": "create-an-automatic-pix-payment-instruction-retry",
+        "source": "https://docs.asaas.com/reference/criar-retentativa-de-instrucao-de-pagamento-pix-automatico"
+      }
+    ],
+    "Bill": [
+      {
+        "method": "GET",
+        "path": "/v3/bill/{id}",
+        "operationId": "retrieve-a-single-bill-payment",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-bill-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/bill/{id}/cancel",
+        "operationId": "cancel-bill-payment",
+        "source": "https://docs.asaas.com/reference/cancel-bill-payment"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/bill",
+        "operationId": "list-bill-payments",
+        "source": "https://docs.asaas.com/reference/list-bill-payments"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/bill",
+        "operationId": "create-a-bill-payment",
+        "source": "https://docs.asaas.com/reference/create-a-bill-payment"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/bill/simulate",
+        "operationId": "simulate-a-bill-payment",
+        "source": "https://docs.asaas.com/reference/simulate-a-bill-payment"
+      }
+    ],
+    "Transfer": [
+      {
+        "method": "POST",
+        "path": "/v3/transfers",
+        "operationId": "transfer-to-another-institution-account-or-pix-key",
+        "source": "https://docs.asaas.com/reference/transfer-to-another-institution-account-or-pix-key"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/transfers",
+        "operationId": "list-transfers",
+        "source": "https://docs.asaas.com/reference/list-transfers"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/transfers/{id}",
+        "operationId": "retrieve-a-single-transfer",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-transfer"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/transfers/",
+        "operationId": "transfer-to-asaas-account",
+        "source": "https://docs.asaas.com/reference/transfer-to-asaas-account"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/transfers/{id}/cancel",
+        "operationId": "cancel-a-transfer",
+        "source": "https://docs.asaas.com/reference/cancel-a-transfer"
+      }
+    ],
+    "Mobile Phone Recharge": [
+      {
+        "method": "POST",
+        "path": "/v3/mobilePhoneRecharges",
+        "operationId": "request-recharge",
+        "source": "https://docs.asaas.com/reference/request-recharge"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/mobilePhoneRecharges",
+        "operationId": "list-mobile-recharges",
+        "source": "https://docs.asaas.com/reference/list-mobile-recharges"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/mobilePhoneRecharges/{id}/cancel",
+        "operationId": "cancel-a-cellphone-recharge",
+        "source": "https://docs.asaas.com/reference/cancel-a-cellphone-recharge"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/mobilePhoneRecharges/{phoneNumber}/provider",
+        "operationId": "search-for-cell-phone-provider",
+        "source": "https://docs.asaas.com/reference/search-for-cell-phone-provider"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/mobilePhoneRecharges/{id}",
+        "operationId": "recover-a-single-cellphone-recharge",
+        "source": "https://docs.asaas.com/reference/recover-a-single-cellphone-recharge"
+      }
+    ],
+    "Finance": [
+      {
+        "method": "GET",
+        "path": "/v3/finance/balance",
+        "operationId": "retrieve-account-balance",
+        "source": "https://docs.asaas.com/reference/retrieve-account-balance"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/finance/payment/statistics",
+        "operationId": "billing-statistics",
+        "source": "https://docs.asaas.com/reference/billing-statistics"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/finance/split/statistics",
+        "operationId": "retrieve-split-values",
+        "source": "https://docs.asaas.com/reference/retrieve-split-values"
+      }
+    ],
+    "Account info": [
+      {
+        "method": "POST",
+        "path": "/v3/myAccount/commercialInfo/",
+        "operationId": "update-business-data",
+        "source": "https://docs.asaas.com/reference/update-business-data"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/commercialInfo/",
+        "operationId": "retrieve-business-data",
+        "source": "https://docs.asaas.com/reference/retrieve-business-data"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/myAccount/paymentCheckoutConfig/",
+        "operationId": "save-payment-checkout-personalization",
+        "source": "https://docs.asaas.com/reference/save-payment-checkout-personalization"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/paymentCheckoutConfig/",
+        "operationId": "retrieve-personalization-settings",
+        "source": "https://docs.asaas.com/reference/retrieve-personalization-settings"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/accountNumber",
+        "operationId": "retrieve-asaas-account-number",
+        "source": "https://docs.asaas.com/reference/retrieve-asaas-account-number"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/fees/",
+        "operationId": "retrieve-account-fees",
+        "source": "https://docs.asaas.com/reference/retrieve-account-fees"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/status/",
+        "operationId": "check-account-registration-status",
+        "source": "https://docs.asaas.com/reference/check-account-registration-status"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/wallets/",
+        "operationId": "retrieve-walletid",
+        "source": "https://docs.asaas.com/reference/retrieve-walletid"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/myAccount/",
+        "operationId": "Delete-white-label-subaccount",
+        "source": "https://docs.asaas.com/reference/Delete-white-label-subaccount"
+      }
+    ],
+    "Financial Transaction": [
+      {
+        "method": "GET",
+        "path": "/v3/financialTransactions",
+        "operationId": "retrieve-extract",
+        "source": "https://docs.asaas.com/reference/retrieve-extract"
+      }
+    ],
+    "Webhook": [
+      {
+        "method": "POST",
+        "path": "/v3/webhooks",
+        "operationId": "create-new-webhook",
+        "source": "https://docs.asaas.com/reference/create-new-webhook"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/webhooks",
+        "operationId": "list-webhooks",
+        "source": "https://docs.asaas.com/reference/list-webhooks"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/webhooks/{id}",
+        "operationId": "retrieve-a-single-webhook",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-webhook"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/webhooks/{id}",
+        "operationId": "update-existing-webhook",
+        "source": "https://docs.asaas.com/reference/update-existing-webhook"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/webhooks/{id}",
+        "operationId": "remove-webhook",
+        "source": "https://docs.asaas.com/reference/remove-webhook"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/webhooks/{id}/removeBackoff",
+        "operationId": "remove-webhook-backoff",
+        "source": "https://docs.asaas.com/reference/remove-webhook-backoff"
+      }
+    ],
+    "Subaccount": [
+      {
+        "method": "GET",
+        "path": "/v3/accounts",
+        "operationId": "list-subaccounts",
+        "source": "https://docs.asaas.com/reference/list-subaccounts"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/accounts",
+        "operationId": "create-subaccount",
+        "source": "https://docs.asaas.com/reference/create-subaccount"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/accounts/{id}/accessTokens",
+        "operationId": "create-api-key-for-subaccount",
+        "source": "https://docs.asaas.com/reference/create-api-key-for-subaccount"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/accounts/{id}/accessTokens",
+        "operationId": "list-api-keys-for-subaccount",
+        "source": "https://docs.asaas.com/reference/list-api-keys-for-subaccount"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/accounts/{id}",
+        "operationId": "retrieve-a-single-subaccount",
+        "source": "https://docs.asaas.com/reference/retrieve-a-single-subaccount"
+      },
+      {
+        "method": "PUT",
+        "path": "/v3/accounts/{id}/accessTokens/{accessTokenId}",
+        "operationId": "update-api-key-for-a-subaccount",
+        "source": "https://docs.asaas.com/reference/update-api-key-for-a-subaccount"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/accounts/{id}/accessTokens/{accessTokenId}",
+        "operationId": "delete-api-key-for-a-subaccount",
+        "source": "https://docs.asaas.com/reference/delete-api-key-for-a-subaccount"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/accounts/{id}",
+        "operationId": "close-non-baas-subaccount",
+        "source": "https://docs.asaas.com/reference/encerrar-subconta-nao-baas"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/accounts/{id}/resendActivationLink",
+        "operationId": "resend-non-baas-subaccount-activation-link",
+        "source": "https://docs.asaas.com/reference/reenviar-link-de-ativacao-para-subconta-nao-baas"
+      }
+    ],
+    "Account Document": [
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/documents",
+        "operationId": "check-pending-documents",
+        "source": "https://docs.asaas.com/reference/check-pending-documents"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v3/myAccount/documents/files/{id}",
+        "operationId": "remove-sent-document",
+        "source": "https://docs.asaas.com/reference/remove-sent-document"
+      },
+      {
+        "method": "GET",
+        "path": "/v3/myAccount/documents/files/{id}",
+        "operationId": "view-document-sent",
+        "source": "https://docs.asaas.com/reference/view-document-sent"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/myAccount/documents/files/{id}",
+        "operationId": "update-sent-document",
+        "source": "https://docs.asaas.com/reference/update-sent-document"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/myAccount/documents/{id}",
+        "operationId": "send-documents",
+        "source": "https://docs.asaas.com/reference/send-documents"
+      }
+    ],
+    "Sandbox Actions": [
+      {
+        "method": "POST",
+        "path": "/v3/sandbox/payment/{id}/overdue",
+        "operationId": "force-expire",
+        "source": "https://docs.asaas.com/reference/force-expire"
+      },
+      {
+        "method": "POST",
+        "path": "/v3/sandbox/payment/{id}/confirm",
+        "operationId": "confirm-payment",
+        "source": "https://docs.asaas.com/reference/confirm-payment"
+      }
+    ]
+  }
+}

@@ -14,6 +14,7 @@ final class ParityVerifier
     public function expectedServices(): array
     {
         return [
+            'automaticPix',
             'payment',
             'sandboxActions',
             'paymentWithSummaryData',

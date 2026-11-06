@@ -69,3 +69,7 @@ Asaas é marca registrada de seus respectivos proprietários.
 ## Playground
 
 https://playground-asaas-sdk.argws.com.br
+
+### Cobertura atual e novos fluxos
+
+Consulte a [matriz de cobertura da API](docs/16-cobertura-api.md) e o [guia de pagamentos hospedados e Pix Automático](docs/17-pagamentos-e-pix-automatico.md). A SDK expõe `$sdk->automaticPix`, retentativas financeiras explícitas e fatura hospedada para cartão. Débito depende da `invoiceUrl`, não do envio direto de dados de cartão. Escritas não são repetidas automaticamente pelo middleware; concilie respostas inconclusivas antes de tentar novamente.

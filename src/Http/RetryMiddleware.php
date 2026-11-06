@@ -19,19 +19,11 @@ final class RetryMiddleware
                 ?ResponseInterface $response = null,
                 ?\Throwable $exception = null
             ) use ($maxRetries): bool {
-                // Card payment is not idempotent. This applies even if the caller
-                // supplies an idempotency header: the provider does not promise it.
-                if (strtoupper($request->getMethod()) === 'POST') {
-                    $path = $request->getUri()->getPath();
-                    if (preg_match('~/payments/[^/]+/payWith(?:Credit)?Card/?$~D', $path)) {
-                        return false;
-                    }
-                    if (preg_match('~/payments/?$~D', $path)) {
-                        $body = json_decode((string) $request->getBody(), true);
-                        if (is_array($body) && array_intersect(['creditCard', 'creditCardToken', 'card', 'cardToken'], array_keys($body))) {
-                            return false;
-                        }
-                    }
+                // Only reads are automatically replayed. Financial writes may have
+                // succeeded even when the response is lost; reconcile before retrying.
+                // A caller-supplied idempotency header does not establish a contract.
+                if (!in_array(strtoupper($request->getMethod()), ['GET', 'HEAD', 'OPTIONS'], true)) {
+                    return false;
                 }
 
                 if ($retries >= $maxRetries) {

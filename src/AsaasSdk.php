@@ -10,6 +10,7 @@ use Asaas\Sdk\Http\Environment;
 use Asaas\Sdk\Service\AccountDocumentService;
 use Asaas\Sdk\Service\AccountInfoService;
 use Asaas\Sdk\Service\AnticipationService;
+use Asaas\Sdk\Service\AutomaticPixService;
 use Asaas\Sdk\Service\BillService;
 use Asaas\Sdk\Service\ChargebackService;
 use Asaas\Sdk\Service\CheckoutService;
@@ -42,6 +43,7 @@ use Asaas\Sdk\Service\WebhookService;
 
 final class AsaasSdk
 {
+    public AutomaticPixService $automaticPix;
     public PaymentService $payment;
     public SandboxActionsService $sandboxActions;
     public PaymentWithSummaryDataService $paymentWithSummaryData;
@@ -89,6 +91,7 @@ final class AsaasSdk
             $config->httpClient
         );
 
+        $this->automaticPix = new AutomaticPixService($this->client);
         $this->payment = new PaymentService($this->client);
         $this->sandboxActions = new SandboxActionsService($this->client);
         $this->paymentWithSummaryData = new PaymentWithSummaryDataService($this->client);

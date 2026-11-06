@@ -56789,6 +56789,24 @@
                                         "description": "If the paying user sets a maximum amount for payments under that authorization, it cannot be lower than the minimum amount defined by the receiving user. This field cannot be filled in fixed-amount authorizations, that is, when the value field is already filled",
                                         "example": 50,
                                         "deprecated": false
+                                    },
+                                    "paymentCreationMode": {
+                                        "type": "string",
+                                        "enum": [
+                                            "MANUAL",
+                                            "SUBSCRIPTION"
+                                        ],
+                                        "default": "MANUAL",
+                                        "description": "SUBSCRIPTION requires value. Creation is not activation."
+                                    },
+                                    "retryPolicy": {
+                                        "type": "string",
+                                        "enum": [
+                                            "NOT_ALLOWED",
+                                            "ALLOW_THREE_IN_SEVEN_DAYS"
+                                        ],
+                                        "default": "NOT_ALLOWED",
+                                        "description": "Financial retry policy, not HTTP transport retries."
                                     }
                                 },
                                 "x-readme-ref-name": "PixReceiverAutomaticRecurringAuthorizationSaveRequestDTO"
@@ -57105,6 +57123,13 @@
                         "schema": {
                             "type": "string",
                             "example": "cus_000005735721"
+                        }
+                    },
+                    {
+                        "name": "subscriptionId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -70406,6 +70431,40 @@
                     }
                 },
                 "deprecated": false
+            },
+            "delete": {
+                "tags": [
+                    "Subaccount"
+                ],
+                "operationId": "close-non-baas-subaccount",
+                "description": "Irreversible; only eligible non-BaaS subaccounts, never logged in, created less than 48 hours ago. Parent account must enable closure management and allowlist the caller IP.",
+                "externalDocs": {
+                    "url": "https://docs.asaas.com/reference/encerrar-subconta-nao-baas"
+                },
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
             }
         },
         "/v3/webhooks/{id}/removeBackoff": {
@@ -75094,6 +75153,97 @@
                     }
                 },
                 "deprecated": false
+            }
+        },
+        "/v3/pix/automatic/paymentInstructions/{id}/retries": {
+            "post": {
+                "tags": [
+                    "Automatic Pix"
+                ],
+                "operationId": "create-an-automatic-pix-payment-instruction-retry",
+                "summary": "Create an explicit retry for a refused Automatic Pix instruction",
+                "externalDocs": {
+                    "url": "https://docs.asaas.com/reference/criar-retentativa-de-instrucao-de-pagamento-pix-automatico"
+                },
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "dueDate"
+                                ],
+                                "properties": {
+                                    "dueDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/v3/accounts/{id}/resendActivationLink": {
+            "post": {
+                "tags": [
+                    "Subaccount"
+                ],
+                "operationId": "resend-non-baas-subaccount-activation-link",
+                "description": "Sends an activation link to the registered login email; permitted only once per non-BaaS subaccount.",
+                "externalDocs": {
+                    "url": "https://docs.asaas.com/reference/reenviar-link-de-ativacao-para-subconta-nao-baas"
+                },
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
             }
         }
     },

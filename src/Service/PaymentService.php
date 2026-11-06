@@ -26,4 +26,25 @@ final class PaymentService extends GeneratedPaymentService
     ): mixed {
         return $this->request('POST', '/v3/payments/{id}/payWithCard', $pathParams, $query, $headers, $payload);
     }
+    /**
+     * Create a hosted invoice eligible for credit/debit through invoiceUrl.
+     * Debit card details cannot be submitted directly to the API. Availability
+     * is determined by Asaas. Creating an invoice does not confirm payment.
+     *
+     * @param array<string, mixed> $payload
+     * @param array<string, string> $headers
+     */
+    public function createHostedCardPayment(array $payload, array $headers = []): mixed
+    {
+        if (array_intersect(['creditCard', 'creditCardToken', 'creditCardHolderInfo', 'card', 'cardToken', 'cardHolderInfo', 'cardType'], array_keys($payload))) {
+            throw new \InvalidArgumentException('Hosted payments must not contain card data or tokens.');
+        }
+        $billingType = $payload['billingType'] ?? 'CREDIT_CARD';
+        if (!in_array($billingType, ['CREDIT_CARD', 'UNDEFINED'], true)) {
+            throw new \InvalidArgumentException('Hosted card payments require CREDIT_CARD or UNDEFINED.');
+        }
+        $payload['billingType'] = $billingType;
+
+        return $this->request('POST', '/v3/payments', headers: $headers, payload: $payload);
+    }
 }
