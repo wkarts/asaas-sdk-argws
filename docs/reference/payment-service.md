@@ -15,6 +15,7 @@ Acesso via fachada: `$asaas->payment`.
 | `retrievePaymentBillingInformation` | GET | `/v3/payments/{id}/billingInfo` |
 | `capturePaymentWithPreAuthorization` | POST | `/v3/payments/{id}/captureAuthorizedPayment` |
 | `getDigitableBillLine` | GET | `/v3/payments/{id}/identificationField` |
+| `payAChargeWithCard` | POST | `/v3/payments/{id}/payWithCard` |
 | `payAChargeWithCreditCard` | POST | `/v3/payments/{id}/payWithCreditCard` |
 | `getQrCodeForPixPayments` | GET | `/v3/payments/{id}/pixQrCode` |
 | `confirmCashReceipt` | POST | `/v3/payments/{id}/receiveInCash` |
