@@ -56968,6 +56968,22 @@
                                             "description": "Unique linked subscription identifier",
                                             "example": "sub_000005735721",
                                             "deprecated": false
+                                        },
+                                        "paymentCreationMode": {
+                                            "type": "string",
+                                            "description": "SUBSCRIPTION requires value. Creation is not activation.",
+                                            "enum": [
+                                                "MANUAL",
+                                                "SUBSCRIPTION"
+                                            ]
+                                        },
+                                        "retryPolicy": {
+                                            "type": "string",
+                                            "description": "Financial retry policy, not HTTP transport retries.",
+                                            "enum": [
+                                                "NOT_ALLOWED",
+                                                "ALLOW_THREE_IN_SEVEN_DAYS"
+                                            ]
                                         }
                                     },
                                     "x-readme-ref-name": "PixReceiverAutomaticRecurringAuthorizationGetResponseDTO"
@@ -57327,6 +57343,22 @@
                                                         "description": "Unique linked subscription identifier",
                                                         "example": "sub_000005735721",
                                                         "deprecated": false
+                                                    },
+                                                    "paymentCreationMode": {
+                                                        "type": "string",
+                                                        "description": "SUBSCRIPTION requires value. Creation is not activation.",
+                                                        "enum": [
+                                                            "MANUAL",
+                                                            "SUBSCRIPTION"
+                                                        ]
+                                                    },
+                                                    "retryPolicy": {
+                                                        "type": "string",
+                                                        "description": "Financial retry policy, not HTTP transport retries.",
+                                                        "enum": [
+                                                            "NOT_ALLOWED",
+                                                            "ALLOW_THREE_IN_SEVEN_DAYS"
+                                                        ]
                                                     }
                                                 },
                                                 "x-readme-ref-name": "PixReceiverAutomaticRecurringAuthorizationGetResponseDTO"
@@ -57611,6 +57643,22 @@
                                             "description": "Unique linked subscription identifier",
                                             "example": "sub_000005735721",
                                             "deprecated": false
+                                        },
+                                        "paymentCreationMode": {
+                                            "type": "string",
+                                            "description": "SUBSCRIPTION requires value. Creation is not activation.",
+                                            "enum": [
+                                                "MANUAL",
+                                                "SUBSCRIPTION"
+                                            ]
+                                        },
+                                        "retryPolicy": {
+                                            "type": "string",
+                                            "description": "Financial retry policy, not HTTP transport retries.",
+                                            "enum": [
+                                                "NOT_ALLOWED",
+                                                "ALLOW_THREE_IN_SEVEN_DAYS"
+                                            ]
                                         }
                                     },
                                     "x-readme-ref-name": "PixReceiverAutomaticRecurringAuthorizationGetResponseDTO"
@@ -60362,12 +60410,43 @@
                 "operationId": "list-automatic-pix-payment-instructions",
                 "parameters": [
                     {
+                        "name": "authorizationId",
+                        "in": "query",
+                        "description": "Filter by unique authorization identifier",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "customerId",
+                        "in": "query",
+                        "description": "Filter by unique customer identifier",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "paymentId",
                         "in": "query",
                         "description": "Filter by unique payment identifier",
                         "schema": {
                             "type": "string",
                             "example": null
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by current instruction status. DONE does not prove payment settlement.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "AWAITING_REQUEST",
+                                "SCHEDULED",
+                                "DONE",
+                                "CANCELLED",
+                                "REFUSED"
+                            ]
                         }
                     }
                 ],
@@ -60612,6 +60691,23 @@
                             "maximum": 100,
                             "type": "integer",
                             "example": 10
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by bill payment status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "PENDING",
+                                "BANK_PROCESSING",
+                                "PAID",
+                                "FAILED",
+                                "CANCELLED",
+                                "REFUNDED",
+                                "AWAITING_CHECKOUT_RISK_ANALYSIS_REQUEST"
+                            ]
                         }
                     }
                 ],

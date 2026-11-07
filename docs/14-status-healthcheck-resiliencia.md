@@ -6,7 +6,7 @@ Este guia mostra como verificar saúde da API e aplicar padrões de resiliência
 
 Como não há endpoint dedicado de healthcheck no SDK, use uma chamada **leve** já disponível:
 
-- `PaymentService::listPayments(['limit' => 1])`
+- `PaymentService::listPayments(query: ['limit' => 1])`
 
 ### Exemplo: função de healthcheck
 
@@ -22,7 +22,7 @@ function asaasHealthCheck(AsaasSdk $sdk): array
     $start = microtime(true);
 
     try {
-        $sdk->payment->listPayments(['limit' => 1]);
+        $sdk->payment->listPayments(query: ['limit' => 1]);
         $latencyMs = (int) ((microtime(true) - $start) * 1000);
 
         return [
@@ -127,7 +127,7 @@ function withRetry(callable $fn, int $maxAttempts = 3): mixed
     }
 }
 
-$result = withRetry(fn() => $asaas->payment->listPayments(['limit' => 1]));
+$result = withRetry(fn() => $asaas->payment->listPayments(query: ['limit' => 1]));
 ```
 
 ## 4) Circuit Breaker simples
@@ -220,7 +220,7 @@ class CachedCircuitBreaker
 
 ```php
 $headers = ['X-Correlation-Id' => 'req-123'];
-$asaas->payment->listPayments(['limit' => 1], $headers);
+$asaas->payment->listPayments(query: ['limit' => 1], headers: $headers);
 ```
 
 - **Latência:** meça com `microtime(true)`.

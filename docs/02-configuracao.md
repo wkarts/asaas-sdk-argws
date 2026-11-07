@@ -76,5 +76,5 @@ $headers = [
     'X-Request-Source' => 'checkout'
 ];
 
-$result = $asaas->payment->listPayments(['limit' => 10], $headers);
+$result = $asaas->payment->listPayments(query: ['limit' => 10], headers: $headers);
 ```

@@ -59,6 +59,7 @@ Você pode verificar status da API com uma chamada leve (ex.: `listPayments` com
 - [Status/Healthcheck/Resiliência](docs/14-status-healthcheck-resiliencia.md)
 - [Perfex CRM (exemplos)](docs/15-exemplos-perfex-crm.md)
 - [Playground (referência)](docs/16-playground-referencia.md)
+- [Relatórios financeiros e recuperação por API](docs/20-relatorios-financeiros.md)
 - [Referência de endpoints (gerada do código)](docs/99-reference-endpoints.md)
 
 ## Aviso legal
@@ -73,3 +74,5 @@ https://playground-asaas-sdk.argws.com.br
 ### Cobertura atual e novos fluxos
 
 Consulte a [matriz de cobertura da API](docs/16-cobertura-api.md) e o [guia de pagamentos hospedados e Pix Automático](docs/17-pagamentos-e-pix-automatico.md). A SDK expõe `$sdk->automaticPix`, retentativas financeiras explícitas e fatura hospedada para cartão. Débito depende da `invoiceUrl`, não do envio direto de dados de cartão. Escritas não são repetidas automaticamente pelo middleware; concilie respostas inconclusivas antes de tentar novamente.
+
+Consultas de extrato, saldo, estatísticas e relatórios operacionais estão mapeadas na [matriz financeira](docs/20-relatorios-financeiros.md). `Asaas\Sdk\Util\Paginator` percorre listas sob demanda, preserva os filtros e sinaliza resultados incompletos. Passe os filtros com `query:` nos serviços gerados; veja o [guia de paginação](docs/07-paginacao-filtros-ordenacao.md).

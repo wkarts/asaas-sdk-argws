@@ -19,7 +19,7 @@ $asaas = new AsaasSdk(new AsaasConfig(
 ## 2) Listar cobranças
 
 ```php
-$result = $asaas->payment->listPayments(['limit' => 10]);
+$result = $asaas->payment->listPayments(query: ['limit' => 10]);
 ```
 
 ## 3) Criar cobrança
@@ -29,10 +29,10 @@ $payload = [
     'customer' => 'cus_123',
     'billingType' => 'BOLETO',
     'value' => 150.00,
-    'dueDate' => '2025-01-20'
+    'dueDate' => '2027-01-20'
 ];
 
-$result = $asaas->payment->createPayment($payload);
+$result = $asaas->payment->createNewPayment(payload: $payload);
 ```
 
 ## 4) Tratamento de erro básico
@@ -42,7 +42,7 @@ use Asaas\Sdk\Exception\ApiException;
 use Asaas\Sdk\Exception\TransportException;
 
 try {
-    $result = $asaas->payment->listPayments(['limit' => 10]);
+    $result = $asaas->payment->listPayments(query: ['limit' => 10]);
 } catch (ApiException $e) {
     // Erro HTTP da API (4xx/5xx)
     $status = $e->getStatusCode();
@@ -52,5 +52,4 @@ try {
 }
 ```
 
-> **Nota:** demais serviços estão presentes no SDK, porém sem métodos gerados no momento.
-> Veja `docs/05-servicos-e-endpoints.md` para o inventário completo.
+> A criação envia uma operação real para o ambiente configurado e não confirma o pagamento. Confira as demais fachadas em [Serviços e endpoints](05-servicos-e-endpoints.md) e as consultas disponíveis na [matriz de relatórios](20-relatorios-financeiros.md).

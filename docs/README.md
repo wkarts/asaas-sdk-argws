@@ -26,6 +26,7 @@
 - [17 - Guia de payloads mínimos (por recurso)](17-guia-payloads-minimos.md)
 - [18 - Mapeamento ERP/Perfex ↔ Asaas](18-mapeamento-erp-perfex-asaas.md)
 - [19 - Idempotência e “não duplicar” como padrão](19-idempotencia-e-anti-duplicacao.md)
+- [20 - Relatórios financeiros e recuperação por API](20-relatorios-financeiros.md)
 
 - [99 — Referência de endpoints (gerada do código)](99-reference-endpoints.md)
 
