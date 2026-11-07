@@ -152,4 +152,28 @@ class AutomaticPixService extends AbstractService
         );
     }
 
+    /**
+     * @param array<string, string> $pathParams
+     * @param array<string, mixed> $query
+     * @param array<string, string> $headers
+     * @param array<string, mixed>|null $payload
+     */
+    public function createAnAutomaticPixPaymentInstructionRetry(
+        array $pathParams = [],
+        array $query = [],
+        array $headers = [],
+        ?array $payload = null
+    ): mixed {
+        return $this->request(
+            'POST',
+            '/v3/pix/automatic/paymentInstructions/{id}/retries',
+            $pathParams,
+            $query,
+            $headers,
+            $payload,
+            false,
+            false
+        );
+    }
+
 }

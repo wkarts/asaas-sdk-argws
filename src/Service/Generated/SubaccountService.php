@@ -134,6 +134,30 @@ class SubaccountService extends AbstractService
      * @param array<string, string> $headers
      * @param array<string, mixed>|null $payload
      */
+    public function closeNonBaasSubaccount(
+        array $pathParams = [],
+        array $query = [],
+        array $headers = [],
+        ?array $payload = null
+    ): mixed {
+        return $this->request(
+            'DELETE',
+            '/v3/accounts/{id}',
+            $pathParams,
+            $query,
+            $headers,
+            $payload,
+            false,
+            false
+        );
+    }
+
+    /**
+     * @param array<string, string> $pathParams
+     * @param array<string, mixed> $query
+     * @param array<string, string> $headers
+     * @param array<string, mixed>|null $payload
+     */
     public function updateApiKeyForASubaccount(
         array $pathParams = [],
         array $query = [],
@@ -167,6 +191,30 @@ class SubaccountService extends AbstractService
         return $this->request(
             'DELETE',
             '/v3/accounts/{id}/accessTokens/{accessTokenId}',
+            $pathParams,
+            $query,
+            $headers,
+            $payload,
+            false,
+            false
+        );
+    }
+
+    /**
+     * @param array<string, string> $pathParams
+     * @param array<string, mixed> $query
+     * @param array<string, string> $headers
+     * @param array<string, mixed>|null $payload
+     */
+    public function resendNonBaasSubaccountActivationLink(
+        array $pathParams = [],
+        array $query = [],
+        array $headers = [],
+        ?array $payload = null
+    ): mixed {
+        return $this->request(
+            'POST',
+            '/v3/accounts/{id}/resendActivationLink',
             $pathParams,
             $query,
             $headers,

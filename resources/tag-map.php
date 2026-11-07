@@ -19,6 +19,7 @@ return [
     'Pix' => 'PixService',
     'Pix Transaction' => 'PixTransactionService',
     'Anticipation' => 'AnticipationService',
+    'Automatic Pix' => 'AutomaticPixService',
     'Recurring Pix' => 'RecurringPixService',
     'Payment Link' => 'PaymentLinkService',
     'Checkout' => 'CheckoutService',
