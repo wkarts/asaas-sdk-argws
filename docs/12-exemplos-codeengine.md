@@ -23,7 +23,7 @@ $sdk = new AsaasSdk(new AsaasConfig(
 ));
 
 try {
-    $payments = $sdk->payment->listPayments(['limit' => 5]);
+    $payments = $sdk->payment->listPayments(query: ['limit' => 5]);
     print_r($payments);
 } catch (ApiException $e) {
     fwrite(STDERR, "API error: {$e->getStatusCode()}\n");
